@@ -1,0 +1,281 @@
+{% extends 'accounts/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow border-info">
+                <div class="card-header bg-info text-dark text-center">
+                    <h4>Employee Daily Verification</h4>
+                </div>
+                <div class="card-body text-center">
+                    <p class="mb-4">Welcome back, {{ trainer.username }}. Please complete your daily employee verification to access the portal.</p>
+                    
+                    <div class="position-relative mx-auto mb-3 border rounded overflow-hidden" 
+                         style="width: 100%; max-width: 640px; aspect-ratio: 4/3; background: #000; display: flex; align-items: center; justify-content: center;">
+                        
+                        <video id="video-feed" autoplay muted playsinline class="w-100 h-100 position-absolute" style="object-fit: cover; transform: scaleX(-1); z-index: 1;"></video>
+                        <canvas id="overlay-canvas" class="w-100 h-100 position-absolute top-0 start-0" style="z-index: 2; pointer-events: none;"></canvas>
+                        
+                        <div id="loading-indicator" class="position-absolute z-index-3 text-white d-flex flex-column align-items-center">
+                            <div class="spinner-border mb-2" role="status"></div>
+                            <span>Initializing Camera & AI Models...</span>
+                        </div>
+                    </div>
+
+                    <div id="status-message" class="alert alert-info mt-3" style="display: none;"></div>
+                    
+                    <div class="progress mt-3 mb-3" style="height: 5px; display: none;" id="verification-progress-container">
+                        <div id="verification-progress" class="progress-bar progress-bar-striped progress-bar-animated bg-info" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <a href="{% url 'login' %}" class="btn btn-outline-secondary mt-3">Cancel & Return to Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load face-api.js -->
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const video = document.getElementById('video-feed');
+    const canvas = document.getElementById('overlay-canvas');
+    const statusMsg = document.getElementById('status-message');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    const progressContainer = document.getElementById('verification-progress-container');
+    const progressBar = document.getElementById('verification-progress');
+    
+    let isModelsLoaded = false;
+    let savedDescriptorObj = null; 
+    let savedDescriptorArray = null;
+    let isVerifying = false;
+    let locationData = { lat: null, lng: null };
+
+    const savedDescriptorRaw = '{{ saved_descriptor|escapejs }}';
+    
+    function showStatus(message, type = 'info') {
+        statusMsg.innerHTML = message;
+        statusMsg.className = `alert alert-${type} mt-3 fade show`;
+        statusMsg.style.display = 'block';
+    }
+
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                locationData.lat = position.coords.latitude;
+                locationData.lng = position.coords.longitude;
+            },
+            (error) => console.warn("Geolocation denied or failed.", error)
+        );
+    }
+
+    try {
+        if (savedDescriptorRaw && savedDescriptorRaw !== 'None' && savedDescriptorRaw !== '') {
+            savedDescriptorObj = JSON.parse(savedDescriptorRaw);
+            if (Array.isArray(savedDescriptorObj)) {
+                savedDescriptorArray = new Float32Array(savedDescriptorObj);
+            } else if (typeof savedDescriptorObj === 'object') {
+                savedDescriptorArray = new Float32Array(Object.values(savedDescriptorObj));
+            }
+        } else {
+             window.location.href = "{% url 'trainer_setup_face' %}"; 
+             return;
+        }
+    } catch (e) {
+        showStatus('Error loading saved face profile. Please set up your face again.', 'danger');
+        setTimeout(() => window.location.href = "{% url 'trainer_setup_face' %}", 3000);
+        return;
+    }
+
+    const MODEL_URLS = [
+        'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/',
+        '/static/models/',
+        'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights/'
+    ];
+
+    async function loadModels(index = 0) {
+        if (index >= MODEL_URLS.length) {
+            showStatus('<i class="mdi mdi-alert-circle"></i> Failed to load AI models.', 'danger');
+            loadingIndicator.style.display = 'none';
+            return false;
+        }
+
+        const url = MODEL_URLS[index];
+        try {
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(url),
+                faceapi.nets.faceLandmark68Net.loadFromUri(url),
+                faceapi.nets.faceRecognitionNet.loadFromUri(url)
+            ]);
+            return true;
+        } catch (error) {
+            return await loadModels(index + 1);
+        }
+    }
+
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
+                audio: false 
+            });
+            video.srcObject = stream;
+            
+            return new Promise((resolve) => {
+                video.onloadedmetadata = () => {
+                    loadingIndicator.style.display = 'none';
+                    video.play();
+                    resolve(true);
+                };
+            });
+        } catch (err) {
+            loadingIndicator.style.display = 'none';
+            showStatus('<i class="mdi mdi-camera-off"></i> Camera access denied.', 'danger');
+            return false;
+        }
+    }
+
+    async function submitVerificationResult(success) {
+        if (isVerifying) return;
+        isVerifying = true;
+        
+        progressContainer.style.display = 'flex';
+        progressBar.style.width = '100%';
+        progressBar.classList.remove('bg-info');
+        progressBar.classList.add(success ? 'bg-success' : 'bg-danger');
+
+        showStatus(success ? 
+            '<i class="mdi mdi-check-circle"></i> Verification successful! Logging you in...' : 
+            '<i class="mdi mdi-close-circle"></i> Verification failed. Logging attempt...', 
+            success ? 'success' : 'danger'
+        );
+
+        try {
+            const response = await fetch('/accounts/api/employee-verify/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    action: 'verify_face',
+                    status: success ? 'success' : 'failed',
+                    lat: locationData.lat,
+                    lng: locationData.lng
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success && success) {
+                window.location.href = data.redirect || '/accounts/dashboard/';
+            } else if (!success) {
+                setTimeout(() => { window.location.reload(); }, 3000);
+            } else {
+                showStatus(`Server Error: ${data.error}`, 'danger');
+                isVerifying = false;
+            }
+        } catch (error) {
+            showStatus('Network error during verification.', 'danger');
+            isVerifying = false;
+        }
+    }
+
+    async function init() {
+        isModelsLoaded = await loadModels();
+        if (!isModelsLoaded) return;
+        
+        const cameraStarted = await startCamera();
+        if (!cameraStarted) return;
+        
+        showStatus('<i class="mdi mdi-face-recognition"></i> Look at the camera to verify your identity.', 'info');
+        
+        const displaySize = { width: video.videoWidth, height: video.videoHeight };
+        canvas.width = displaySize.width;
+        canvas.height = displaySize.height;
+        faceapi.matchDimensions(canvas, displaySize);
+
+        let consecutiveMatches = 0;
+        let consecutiveMismatches = 0;
+        const MATCH_THRESHOLD = 0.45;
+        const REQUIRED_CONSECUTIVE_MATCHES = 3;
+        const MAX_CONSECUTIVE_MISMATCHES = 20;
+
+        const interval = setInterval(async () => {
+            if (isVerifying || video.paused || video.ended) {
+                if (isVerifying) clearInterval(interval);
+                return;
+            }
+
+            try {
+                const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                                             .withFaceLandmarks()
+                                             .withFaceDescriptor();
+
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (detection) {
+                    const resizedDetection = faceapi.resizeResults(detection, displaySize);
+                    faceapi.draw.drawDetections(canvas, resizedDetection);
+                    
+                    if (savedDescriptorArray) {
+                        const distance = faceapi.euclideanDistance(detection.descriptor, savedDescriptorArray);
+                        
+                        // Always log match status visually for user feedback
+                        const drawOptions = {
+                            anchorPosition: 'TOP_LEFT',
+                            backgroundColor: distance < MATCH_THRESHOLD ? 'rgba(0, 255, 0, 0.5)' : 'rgba(255, 0, 0, 0.5)'
+                        };
+                        const drawBox = new faceapi.draw.DrawTextField([`Dist: ${distance.toFixed(2)}`], resizedDetection.detection.box.bottomLeft, drawOptions);
+                        drawBox.draw(canvas);
+
+                        if (distance < MATCH_THRESHOLD) {
+                            consecutiveMatches++;
+                            consecutiveMismatches = 0;
+                            
+                            progressContainer.style.display = 'flex';
+                            progressBar.style.width = `${(consecutiveMatches / REQUIRED_CONSECUTIVE_MATCHES) * 100}%`;
+                            
+                            if (consecutiveMatches >= REQUIRED_CONSECUTIVE_MATCHES) {
+                                clearInterval(interval);
+                                ctx.strokeStyle = "#00ff00";
+                                ctx.lineWidth = 4;
+                                ctx.strokeRect(resizedDetection.detection.box.x, resizedDetection.detection.box.y, resizedDetection.detection.box.width, resizedDetection.detection.box.height);
+                                submitVerificationResult(true);
+                            }
+                        } else {
+                            consecutiveMatches = 0;
+                            consecutiveMismatches++;
+                            
+                            progressContainer.style.display = 'none';
+                            progressBar.style.width = '0%';
+                            
+                            if (consecutiveMismatches >= MAX_CONSECUTIVE_MISMATCHES) {
+                                clearInterval(interval);
+                                ctx.strokeStyle = "#ff0000";
+                                ctx.lineWidth = 4;
+                                ctx.strokeRect(resizedDetection.detection.box.x, resizedDetection.detection.box.y, resizedDetection.detection.box.width, resizedDetection.detection.box.height);
+                                submitVerificationResult(false);
+                            }
+                        }
+                    }
+                } else {
+                    consecutiveMatches = 0;
+                    progressContainer.style.display = 'none';
+                    progressBar.style.width = '0%';
+                }
+            } catch (err) {
+                console.error("Detection error:", err);
+            }
+        }, 300);
+    }
+
+    init();
+});
+</script>
+{% endblock %}

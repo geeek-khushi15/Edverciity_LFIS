@@ -1,0 +1,34 @@
+{% extends 'adminpanel/base.html' %}
+{% block title %}Tests{% endblock %}
+{% block page_title %}Tests{% endblock %}
+{% block nav_tests %}active{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-slate-800">All Tests <span class="text-slate-400 font-normal text-sm">({{ tests.count }})</span></h2>
+    </div>
+    <div class="overflow-x-auto">
+        <table>
+            <thead>
+                <tr><th>#</th><th>Title</th><th>Batch</th><th>Course</th><th>Module</th><th>Pass %</th><th>Attempts</th></tr>
+            </thead>
+            <tbody>
+                {% for t in tests %}
+                <tr>
+                    <td class="text-slate-400">{{ forloop.counter }}</td>
+                    <td class="font-semibold text-slate-800">{{ t.title }}</td>
+                    <td>{{ t.batch.name }}</td>
+                    <td class="text-indigo-700">{{ t.batch.course.title }}</td>
+                    <td>{{ t.module.name|default:"—" }}</td>
+                    <td>{{ t.pass_percentage }}%</td>
+                    <td><span class="badge badge-purple">{{ t.attempt_count }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-slate-400 py-6">No tests yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto mt-8">
+    
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Attendance Register</h2>
+            <p class="text-gray-500 text-sm mt-1">Session Date: <span class="font-bold text-brand-600">{{ session.date|date:"F d, Y" }}</span> | Batch: <span class="font-bold text-gray-700">{{ session.batch.name }}</span></p>
+        </div>
+        <a href="{% url 'trainer_session_list' %}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:ring-4 focus:ring-gray-200 transition-colors">
+            <i class="bi bi-arrow-left mr-2"></i> Back to Sessions
+        </a>
+    </div>
+
+    <div class="bg-white border border-brand-100 rounded-2xl shadow-sm overflow-hidden mb-8">
+        <div class="px-6 py-4 bg-brand-50 border-b border-brand-100">
+            <h4 class="text-sm font-bold text-brand-800 uppercase tracking-wide"><i class="bi bi-journal-check mr-2"></i>Topics Covered Today</h4>
+        </div>
+        <div class="p-6 text-gray-700 whitespace-pre-line text-sm border-l-4 border-brand-500 ml-6 my-4 bg-gray-50 rounded-r-lg">
+            {{ session.topics_covered }}
+        </div>
+    </div>
+
+    <form method="post" id="attendanceForm">
+        {% csrf_token %}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-slate-700 px-6 py-4 flex justify-between items-center">
+                <h5 class="text-white font-bold text-lg mb-0"><i class="bi bi-people-fill mr-2"></i>Enrolled Students</h5>
+                <span class="bg-slate-600 text-slate-100 text-xs font-bold px-3 py-1 rounded-full border border-slate-500">{{ attendances|length }} Students</span>
+            </div>
+            
+            <div class="p-4 border-b border-gray-100 bg-gray-50 flex justify-end">
+                <button type="button" id="selectAll" class="text-sm font-medium text-brand-600 hover:text-brand-800 mr-4 transition-colors"><i class="bi bi-check-all mr-1"></i>Select All</button>
+                <button type="button" id="deselectAll" class="text-sm font-medium text-rose-600 hover:text-rose-800 transition-colors"><i class="bi bi-x mr-1"></i>Deselect All</button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider w-16 text-center">Present</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Student Name</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Email</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for att in attendances %}
+                        <tr class="hover:bg-blue-50 transition-colors duration-150 cursor-pointer" onclick="document.getElementById('check_{{ att.student.id }}').click()">
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div class="flex items-center justify-center">
+                                    <input type="checkbox" id="check_{{ att.student.id }}" name="present_students" value="{{ att.student.id }}" class="w-5 h-5 text-brand-600 bg-gray-100 border-gray-300 rounded focus:ring-brand-500 focus:ring-2 cursor-pointer attendance-checkbox" {% if att.is_present %}checked{% endif %} onclick="event.stopPropagation()">
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="h-8 w-8 flex-shrink-0 bg-gradient-to-br from-slate-400 to-slate-600 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-sm">
+                                        {{ att.student.first_name|default:att.student.username|make_list|first|upper }}
+                                    </div>
+                                    <div class="ml-3 text-sm font-bold text-gray-900">{{ att.student.first_name }} {{ att.student.last_name }}</div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ att.student.email }}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="px-6 py-8 text-center text-gray-500">
+                                <i class="bi bi-person-x text-3xl mb-2 text-gray-300 block"></i>
+                                No active students found in this batch.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-end">
+                <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-sm transition-colors duration-200">
+                    <i class="bi bi-save mr-2"></i> Save Attendance Register
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    document.getElementById('selectAll').addEventListener('click', function() {
+        document.querySelectorAll('.attendance-checkbox').forEach(cb => cb.checked = true);
+    });
+    document.getElementById('deselectAll').addEventListener('click', function() {
+        document.querySelectorAll('.attendance-checkbox').forEach(cb => cb.checked = false);
+    });
+</script>
+{% endblock %}

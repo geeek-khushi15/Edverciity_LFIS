@@ -1,0 +1,86 @@
+{% extends 'accounts/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-primary">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4>Securing Session</h4>
+                </div>
+                <div class="card-body text-center py-5">
+                    <div id="loading-spinner">
+                        <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <h5 class="text-muted">Finalizing Login...</h5>
+                        <p class="small text-secondary">We are capturing your location to secure your session.</p>
+                    </div>
+
+                    <div id="status-message" class="alert alert-info mt-3" style="display: none;"></div>
+                    
+                    <a href="{% url 'login' %}" id="cancel-btn" class="btn btn-outline-secondary mt-3" style="display: none;">Cancel & Return to Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const statusMsg = document.getElementById('status-message');
+    const cancelBtn = document.getElementById('cancel-btn');
+    
+    function showStatus(message, type = 'info') {
+        statusMsg.innerHTML = message;
+        statusMsg.className = `alert alert-${type} mt-3 fade show`;
+        statusMsg.style.display = 'block';
+    }
+
+    async function submitLocation(lat = null, lng = null) {
+        try {
+            const response = await fetch('/accounts/api/trainer-location-log/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    lat: lat,
+                    lng: lng
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                window.location.href = data.redirect || '/accounts/dashboard/';
+            } else {
+                showStatus(`Server Error: ${data.error}`, 'danger');
+                cancelBtn.style.display = 'inline-block';
+            }
+        } catch (error) {
+            console.error('API Error:', error);
+            showStatus('Network error during login finalization.', 'danger');
+            cancelBtn.style.display = 'inline-block';
+        }
+    }
+
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                submitLocation(position.coords.latitude, position.coords.longitude);
+            },
+            (error) => {
+                console.warn("Geolocation denied or failed.", error);
+                submitLocation(null, null); // proceed without location
+            },
+            { timeout: 5000 }
+        );
+    } else {
+        submitLocation(null, null);
+    }
+});
+</script>
+{% endblock %}

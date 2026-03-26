@@ -1,0 +1,14 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<section class="max-w-xl mx-auto rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-6 shadow-card">
+    <h2 class="text-xl font-extrabold text-slate-900 dark:text-white">Delete Assignment</h2>
+    <p class="text-sm text-slate-600 dark:text-slate-300 mt-2">Are you sure you want to delete <span class="font-semibold">{{ object.title }}</span>? This action cannot be undone.</p>
+
+    <form method="post" class="mt-6 flex justify-end gap-2">
+        {% csrf_token %}
+        <a href="{% url 'trainer_assignment_list' %}" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancel</a>
+        <button type="submit" class="rounded-xl bg-rose-600 text-white px-4 py-2.5 text-sm font-semibold hover:bg-rose-700">Delete</button>
+    </form>
+</section>
+{% endblock %}

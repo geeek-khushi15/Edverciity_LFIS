@@ -1,0 +1,91 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="space-y-6">
+    <section>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Topic Acknowledgement</h2>
+        <p class="text-slate-600 dark:text-slate-300 mt-1">Review your syllabus topics and acknowledge each one after learning it.</p>
+    </section>
+
+    {% for group in course_groups %}
+    <section class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+        <div class="flex items-center justify-between gap-3 mb-4">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">
+                {{ group.course.title }}
+                {% if group.module %}
+                <span class="text-sm font-semibold text-indigo-600">/ {{ group.module.name }}</span>
+                {% endif %}
+            </h3>
+            <span class="text-xs rounded-full px-3 py-1 bg-indigo-100 text-indigo-700 font-semibold">{{ group.topics|length }} Topics</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-slate-600 border-b border-slate-200">
+                        <th class="py-3 pr-3">Topic Title</th>
+                        <th class="py-3 pr-3">Trainer Taught Status</th>
+                        <th class="py-3 pr-3">Student Understood Status</th>
+                        <th class="py-3 pr-3">Coverage</th>
+                        <th class="py-3 pr-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in group.topics %}
+                    <tr class="border-b border-slate-100">
+                        <td class="py-3 pr-3">
+                            <p class="font-semibold text-slate-900 dark:text-white">{{ row.topic.topic_number }}. {{ row.topic.title }}</p>
+                            <p class="text-xs text-slate-500 mt-1">{{ row.topic.description|truncatechars:90 }}</p>
+                        </td>
+                        <td class="py-3 pr-3">
+                            {% if row.trainer_marked_taught %}
+                            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-green-100 text-green-700">Taught</span>
+                            {% if row.trainer_marked_at %}
+                            <p class="text-xs text-slate-500 mt-1">{{ row.trainer_marked_at|date:'M d, Y h:i A' }}</p>
+                            {% endif %}
+                            {% else %}
+                            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-700">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 pr-3">
+                            {% if row.student_marked_understood %}
+                            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-green-100 text-green-700">Understood</span>
+                            {% if row.student_marked_at %}
+                            <p class="text-xs text-slate-500 mt-1">{{ row.student_marked_at|date:'M d, Y h:i A' }}</p>
+                            {% endif %}
+                            {% else %}
+                            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-700">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 pr-3">
+                            <p class="text-xs font-semibold text-slate-700">{{ row.coverage_percent }}%</p>
+                            <p class="text-xs text-slate-500 mt-1">{{ row.understood_count }}/{{ row.total_students }} students</p>
+                        </td>
+                        <td class="py-3 pr-3">
+                            {% if row.can_mark_understood %}
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="topic_id" value="{{ row.topic.id }}">
+                                <button type="submit" class="inline-flex items-center gap-2 rounded-xl btn-gradient text-white px-3 py-2 text-xs font-semibold">
+                                    <i class="bi bi-check2-circle"></i> Mark as Understood
+                                </button>
+                            </form>
+                            {% elif row.student_marked_understood %}
+                            <p class="text-xs text-slate-500">Locked after acknowledgement</p>
+                            {% else %}
+                            <p class="text-xs text-slate-500">No trainer mapping found</p>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% empty %}
+    <section class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-6 shadow-card">
+        <p class="text-slate-600 dark:text-slate-300">No course topics are available for your enrollments yet.</p>
+    </section>
+    {% endfor %}
+</div>
+{% endblock %}

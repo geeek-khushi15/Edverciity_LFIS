@@ -1,0 +1,93 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="space-y-6 lg:space-y-8">
+    <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Certifications</h2>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">Track application lifecycle and certificate eligibility by batch.</p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </section>
+
+    <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <p class="text-sm text-slate-600 dark:text-slate-300">Pending</p>
+            <h3 class="text-3xl font-extrabold mt-2 text-warning">{{ pending_count }}</h3>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <p class="text-sm text-slate-600 dark:text-slate-300">Approved</p>
+            <h3 class="text-3xl font-extrabold mt-2 text-success">{{ approved_count }}</h3>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <p class="text-sm text-slate-600 dark:text-slate-300">Rejected</p>
+            <h3 class="text-3xl font-extrabold mt-2 text-danger">{{ rejected_count }}</h3>
+        </article>
+    </section>
+
+    <section class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+        {% if enrollments %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-slate-600 dark:text-slate-300 border-b border-slate-200">
+                        <th class="py-3 pr-4">Batch / Course</th>
+                        <th class="py-3 pr-4">Trainer</th>
+                        <th class="py-3 pr-4">Recommendation</th>
+                        <th class="py-3 pr-4">Status</th>
+                        <th class="py-3 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cd in cert_data %}
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td class="py-4 pr-4">
+                            <p class="font-semibold text-slate-900 dark:text-white">{{ cd.enrollment.batch.course.title }}</p>
+                            <span class="text-xs text-slate-600 dark:text-slate-300">{{ cd.enrollment.batch.name }}</span>
+                        </td>
+                        <td class="py-4 pr-4 text-slate-700">{{ cd.enrollment.batch.trainer.username }}</td>
+                        <td class="py-4 pr-4">
+                            {% if cd.is_recommended %}
+                            <span class="inline-flex text-[11px] px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 font-semibold">Recommended</span>
+                            {% else %}
+                            <span class="inline-flex text-[11px] px-2 py-1 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-200 font-semibold">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 pr-4">
+                            {% if cd.application %}
+                                {% if cd.application.status == 'PENDING' %}
+                                <span class="inline-flex text-[11px] px-2 py-1 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 font-semibold">Pending</span>
+                                {% elif cd.application.status == 'APPROVED' %}
+                                <span class="inline-flex text-[11px] px-2 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 font-semibold">Approved</span>
+                                {% else %}
+                                <span class="inline-flex text-[11px] px-2 py-1 rounded-full bg-rose-100 text-rose-800 dark:bg-rose-500/20 dark:text-rose-300 font-semibold">Rejected</span>
+                                {% endif %}
+                            {% else %}
+                            <span class="inline-flex text-[11px] px-2 py-1 rounded-full bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-200 font-semibold">Not Applied</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-4 text-right">
+                            {% if not cd.application and cd.is_recommended %}
+                            <form method="post" action="{% url 'apply_certification' batch_id=cd.enrollment.batch.id %}" class="inline-block">
+                                {% csrf_token %}
+                                <button type="submit" class="rounded-lg btn-gradient text-white text-xs font-semibold px-3 py-2">Apply Now</button>
+                            </form>
+                            {% elif cd.application %}
+                            <button class="rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-300 text-xs font-semibold px-3 py-2 border border-slate-200" disabled>Applied</button>
+                            {% else %}
+                            <button class="rounded-lg bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-300 text-xs font-semibold px-3 py-2 border border-slate-200" disabled>Awaiting Recommendation</button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-sm text-slate-600 dark:text-slate-300">No enrollments found.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

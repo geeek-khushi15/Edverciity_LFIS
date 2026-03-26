@@ -1,0 +1,61 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-10">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-brand-600 px-6 py-5">
+            <h3 class="text-xl font-bold text-white mb-0"><i class="bi bi-calendar-plus mr-2"></i>Log Class Session</h3>
+            <p class="text-brand-100 text-sm mt-1">Record the topics covered today and auto-generate attendance sheets.</p>
+        </div>
+        
+        <div class="p-6 md:p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="bg-red-50 text-red-700 p-4 rounded-lg text-sm border border-red-200 mb-6">
+                    {{ form.non_field_errors }}
+                </div>
+                {% endif %}
+
+                <div class="space-y-4">
+                    <!-- Batch -->
+                    <div>
+                        <label for="{{ form.batch.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">Select Batch</label>
+                        {{ form.batch }}
+                        {% if form.batch.errors %}
+                        <p class="text-red-500 text-xs italic mt-1">{{ form.batch.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Date -->
+                    <div>
+                        <label for="{{ form.date.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">Session Date</label>
+                        {{ form.date }}
+                        {% if form.date.errors %}
+                        <p class="text-red-500 text-xs italic mt-1">{{ form.date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Topics -->
+                    <div>
+                        <label for="{{ form.topics_covered.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">Topics Covered</label>
+                        {{ form.topics_covered }}
+                        {% if form.topics_covered.errors %}
+                        <p class="text-red-500 text-xs italic mt-1">{{ form.topics_covered.errors.0 }}</p>
+                        {% endif %}
+                        <p class="text-xs text-gray-500 mt-2">List the core concepts taught during this block. Students will acknowledge these topics later.</p>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end space-x-3">
+                    <a href="{% url 'dashboard' %}" class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold rounded-lg shadow-sm transition-colors duration-200">Cancel</a>
+                    <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg shadow-sm transition-colors duration-200">
+                        <i class="bi bi-check2-circle mr-1"></i> Create Session
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

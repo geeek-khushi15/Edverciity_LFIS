@@ -1,0 +1,84 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto mt-8">
+    
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Class Sessions History</h2>
+            <p class="text-gray-500 text-sm mt-1">Manage attendance and review topics covered across all assigned batches.</p>
+        </div>
+        <a href="{% url 'create_session' %}" class="inline-flex justify-center items-center px-5 py-2.5 text-sm font-bold text-white bg-brand-600 rounded-lg hover:bg-brand-700 focus:ring-4 focus:outline-none focus:ring-brand-300 shadow-sm transition-colors">
+            <i class="bi bi-calendar-plus mr-2"></i> Log New Session
+        </a>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6 space-y-2">
+        {% for message in messages %}
+        <div class="p-4 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 shadow-sm flex items-center">
+            <i class="bi bi-check-circle-fill text-emerald-500 mr-3 text-lg"></i>
+            <span class="text-sm font-medium">{{ message }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Date</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Batch</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Topics Covered</th>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-extrabold text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for session in sessions %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-150">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center text-sm font-bold text-gray-900">
+                                <i class="bi bi-calendar-event text-brand-500 mr-2"></i> {{ session.date|date:"M d, Y" }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                                {{ session.batch.name }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-600 line-clamp-2 max-w-sm" title="{{ session.topics_covered }}">
+                                {{ session.topics_covered }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium flex gap-2">
+                            <a href="{% url 'mark_attendance' session.id %}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 text-brand-600 rounded-lg text-sm font-bold hover:bg-brand-50 hover:text-brand-700 hover:border-brand-300 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
+                                <i class="bi bi-list-check mr-2"></i> Attendance
+                            </a>
+                            <a href="{% url 'manage_session_topics' session.id %}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <i class="bi bi-ui-checks-grid mr-2"></i> Topic Coverage
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center justify-center text-gray-500">
+                                <div class="h-16 w-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                    <i class="bi bi-calendar-x text-3xl text-gray-400"></i>
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-900 mb-1">No sessions logged</h3>
+                                <p class="text-sm mb-4">You have not recorded any class sessions yet.</p>
+                                <a href="{% url 'create_session' %}" class="text-brand-600 hover:text-brand-800 font-medium text-sm transition-colors">Log your first session &rarr;</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

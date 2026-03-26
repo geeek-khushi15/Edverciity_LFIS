@@ -1,0 +1,30 @@
+{% extends 'accounts/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="max-w-lg mx-auto py-12">
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div class="bg-gradient-to-r from-amber-500 to-amber-700 px-6 py-5 text-center">
+            <h4 class="text-white text-2xl font-bold tracking-wide flex justify-center items-center">
+                <i class="bi bi-person-workspace mr-3 text-amber-200"></i> Trainer Registration
+            </h4>
+        </div>
+        <div class="p-8">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                <div class="font-medium text-sm text-gray-800">
+                    {{ form|crispy }}
+                </div>
+                <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold text-lg py-3 rounded-xl transition-all shadow-md hover:shadow-lg focus:ring-4 focus:ring-amber-300">
+                    Apply as Trainer
+                </button>
+            </form>
+            <div class="mt-8 pt-6 border-t border-gray-100 text-center">
+                <p class="text-gray-500 text-sm">Already a Trainer? 
+                    <a href="{% url 'login' %}" class="text-amber-600 hover:text-amber-800 font-bold ml-1 hover:underline">Login here</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

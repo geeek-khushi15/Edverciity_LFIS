@@ -1,0 +1,61 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="space-y-6 lg:space-y-8">
+    <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Test Results</h2>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">View student attempts and scores for your tests.</p>
+        </div>
+        <a href="{% url 'trainer_test_list' %}" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+            <i class="bi bi-arrow-left"></i> Back to Tests
+        </a>
+    </section>
+
+    <section class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+        <form method="get" class="flex items-end gap-3">
+            <div class="min-w-64">
+                <label for="test" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1">Filter by Test</label>
+                <select name="test" id="test">
+                    <option value="">All tests</option>
+                    {% for test in tests %}
+                    <option value="{{ test.id }}" {% if selected_test == test.id|stringformat:'s' %}selected{% endif %}>{{ test.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="rounded-xl btn-gradient text-white px-4 py-2.5 text-sm font-semibold shadow-sm">Apply</button>
+        </form>
+    </section>
+
+    <section class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+        {% if attempts %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-slate-600 dark:text-slate-300 border-b border-slate-200">
+                        <th class="py-3 pr-4">Student</th>
+                        <th class="py-3 pr-4">Test</th>
+                        <th class="py-3 pr-4">Batch</th>
+                        <th class="py-3 pr-4">Score</th>
+                        <th class="py-3 pr-4">Submitted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attempt in attempts %}
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td class="py-3 pr-4 font-semibold text-slate-900 dark:text-white">{{ attempt.student.username }}</td>
+                        <td class="py-3 pr-4 text-slate-600 dark:text-slate-300">{{ attempt.test.title }}</td>
+                        <td class="py-3 pr-4 text-slate-600 dark:text-slate-300">{{ attempt.test.batch.name }}</td>
+                        <td class="py-3 pr-4 text-slate-700 dark:text-slate-200">{{ attempt.score }}</td>
+                        <td class="py-3 pr-4 text-slate-600 dark:text-slate-300">{{ attempt.submitted_at|default:attempt.attempted_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-sm text-slate-600 dark:text-slate-300">No attempts found.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

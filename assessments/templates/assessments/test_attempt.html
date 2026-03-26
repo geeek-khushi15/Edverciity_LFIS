@@ -1,0 +1,72 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto py-8">
+    
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+        
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-brand-600 to-brand-800 px-8 py-6 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+            <h4 class="text-white text-2xl font-bold tracking-wide flex items-center mb-3 sm:mb-0">
+                <i class="bi bi-journal-text text-brand-200 mr-3"></i> {{ test.title }}
+            </h4>
+            <span class="bg-white text-brand-700 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm uppercase tracking-wide">
+                Passing: {{ test.passing_marks }} Marks
+            </span>
+        </div>
+
+        <div class="p-8 bg-gray-50">
+            <form method="post" class="space-y-8">
+                {% csrf_token %}
+
+                {% for q in questions %}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+                    <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50">
+                        <h5 class="text-lg font-bold text-gray-900 leading-relaxed flex">
+                            <span class="text-brand-500 mr-2">Q{{ forloop.counter }}.</span> {{ q.text }}
+                        </h5>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="space-y-3">
+                            
+                            <!-- Opt 1 -->
+                            <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-brand-50 hover:border-brand-300 transition-all group">
+                                <input type="radio" name="question_{{ q.id }}" value="1" required class="w-5 h-5 text-brand-600 focus:ring-brand-500 border-gray-300">
+                                <span class="ml-3 text-gray-700 font-medium group-hover:text-brand-800">{{ q.option1 }}</span>
+                            </label>
+                            
+                            <!-- Opt 2 -->
+                            <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-brand-50 hover:border-brand-300 transition-all group">
+                                <input type="radio" name="question_{{ q.id }}" value="2" required class="w-5 h-5 text-brand-600 focus:ring-brand-500 border-gray-300">
+                                <span class="ml-3 text-gray-700 font-medium group-hover:text-brand-800">{{ q.option2 }}</span>
+                            </label>
+                            
+                            <!-- Opt 3 -->
+                            <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-brand-50 hover:border-brand-300 transition-all group">
+                                <input type="radio" name="question_{{ q.id }}" value="3" required class="w-5 h-5 text-brand-600 focus:ring-brand-500 border-gray-300">
+                                <span class="ml-3 text-gray-700 font-medium group-hover:text-brand-800">{{ q.option3 }}</span>
+                            </label>
+                            
+                            <!-- Opt 4 -->
+                            <label class="flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-brand-50 hover:border-brand-300 transition-all group">
+                                <input type="radio" name="question_{{ q.id }}" value="4" required class="w-5 h-5 text-brand-600 focus:ring-brand-500 border-gray-300">
+                                <span class="ml-3 text-gray-700 font-medium group-hover:text-brand-800">{{ q.option4 }}</span>
+                            </label>
+
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="pt-6 border-t border-gray-200 flex justify-end">
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg py-3 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all focus:ring-4 focus:ring-emerald-300 flex items-center">
+                        Submit Test <i class="bi bi-check2-circle ml-3"></i>
+                    </button>
+                </div>
+                
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

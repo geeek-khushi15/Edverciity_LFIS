@@ -1,0 +1,713 @@
+{% extends 'accounts/base.html' %}
+
+{% block extra_head %}
+<style>
+    .study-timer-shell {
+        background:
+            radial-gradient(50rem 24rem at -8% -20%, rgba(124, 92, 255, 0.26), transparent 58%),
+            radial-gradient(42rem 20rem at 112% 120%, rgba(236, 72, 153, 0.16), transparent 62%),
+            linear-gradient(155deg, rgba(15, 23, 42, 0.96), rgba(30, 41, 59, 0.95));
+        border: 1px solid rgba(167, 139, 250, 0.3);
+        color: #f8fafc;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 24px 60px -36px rgba(76, 29, 149, 0.9);
+    }
+
+    .study-timer-shell::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 42%, rgba(124, 92, 255, 0.06));
+    }
+
+    .study-mode-btn {
+        border: 1px solid rgba(196, 181, 253, 0.45);
+        color: #ddd6fe;
+        border-radius: 999px;
+        padding: 0.45rem 1rem;
+        font-size: 0.92rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+        background: rgba(15, 23, 42, 0.45);
+    }
+
+    .study-mode-btn.active {
+        background: linear-gradient(135deg, #7c5cff, #9a6bff);
+        color: #ffffff;
+        border-color: rgba(196, 181, 253, 0.85);
+        box-shadow: 0 10px 25px -18px rgba(124, 92, 255, 0.9);
+    }
+
+    .study-flip-clock {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: clamp(0.3rem, 1.8vw, 0.8rem);
+        width: 100%;
+    }
+
+    .flip-digit {
+        position: relative;
+        width: clamp(4.4rem, 15vw, 9rem);
+        height: clamp(6.5rem, 21vw, 12.5rem);
+        border-radius: 1.1rem;
+        background: linear-gradient(180deg, #1a1f31 0%, #0b1020 92%);
+        border: 1px solid rgba(167, 139, 250, 0.26);
+        box-shadow: 0 26px 54px -34px rgba(2, 6, 23, 0.95);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        perspective: 450px;
+    }
+
+    .flip-digit::before,
+    .flip-digit::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        width: 100%;
+    }
+
+    .flip-digit::before {
+        top: 0;
+        height: 52%;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent);
+    }
+
+    .flip-digit::after {
+        top: 50%;
+        transform: translateY(-50%);
+        height: 2px;
+        background: rgba(15, 23, 42, 0.95);
+        box-shadow: 0 -1px 0 rgba(196, 181, 253, 0.08), 0 1px 0 rgba(0, 0, 0, 0.85);
+    }
+
+    .flip-number {
+        font-family: 'Sora', 'Inter', sans-serif;
+        font-weight: 800;
+        color: #f8fafc;
+        font-size: clamp(3.6rem, 12vw, 8.3rem);
+        line-height: 1;
+        transform-origin: 50% 52%;
+    }
+
+    .flip-digit.flipping .flip-number {
+        animation: flipTick 0.45s ease;
+    }
+
+    @keyframes flipTick {
+        0% { transform: rotateX(0deg); opacity: 1; }
+        46% { transform: rotateX(-76deg); opacity: 0.55; }
+        100% { transform: rotateX(0deg); opacity: 1; }
+    }
+
+    .flip-colon {
+        font-family: 'Sora', 'Inter', sans-serif;
+        font-size: clamp(2.5rem, 8vw, 5rem);
+        color: rgba(224, 231, 255, 0.95);
+        font-weight: 800;
+        margin-inline: clamp(0.12rem, 0.55vw, 0.25rem);
+    }
+
+    .timer-ampm {
+        color: #c4b5fd;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-family: 'Sora', 'Inter', sans-serif;
+    }
+
+    .timer-ui-panel {
+        position: relative;
+        z-index: 1;
+    }
+
+    .timer-action-btn {
+        border: 1px solid rgba(196, 181, 253, 0.55);
+        color: #ede9fe;
+        border-radius: 999px;
+        min-height: 44px;
+        min-width: 44px;
+        padding: 0.55rem 1.2rem;
+        font-size: 0.95rem;
+        font-weight: 700;
+        transition: all 0.2s ease;
+        background: rgba(15, 23, 42, 0.64);
+    }
+
+    .timer-action-btn:hover {
+        background: rgba(76, 29, 149, 0.35);
+    }
+
+    .timer-action-btn.primary {
+        background: linear-gradient(135deg, #7c5cff, #9a6bff);
+        color: #ffffff;
+        border-color: rgba(196, 181, 253, 0.75);
+    }
+
+    .timer-settings-panel {
+        background: rgba(15, 23, 42, 0.72);
+        border: 1px dashed rgba(196, 181, 253, 0.42);
+    }
+
+    .timer-fullscreen {
+        position: fixed;
+        inset: 0;
+        z-index: 110;
+        margin: 0;
+        border-radius: 0;
+        padding: clamp(1.2rem, 3vw, 2.3rem);
+        border: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 100vh;
+    }
+
+    .timer-fullscreen .study-flip-clock {
+        margin-top: clamp(1.4rem, 3.5vh, 2.8rem);
+    }
+
+    .timer-fullscreen .flip-digit {
+        width: clamp(5.8rem, 18vw, 13rem);
+        height: clamp(8rem, 25vw, 16rem);
+    }
+
+    .timer-fullscreen .flip-number {
+        font-size: clamp(4.5rem, 14vw, 11rem);
+    }
+
+    .timer-fullscreen .flip-colon {
+        font-size: clamp(3.4rem, 10vw, 6.8rem);
+    }
+
+    body.timer-immersive-lock {
+        overflow: hidden;
+    }
+
+    html.dark .study-timer-shell {
+        border-color: rgba(167, 139, 250, 0.35);
+    }
+
+    html.dark .study-mode-btn,
+    html.dark .timer-action-btn {
+        color: #ede9fe;
+        border-color: rgba(196, 181, 253, 0.45);
+        background: rgba(15, 23, 42, 0.74);
+    }
+
+    html.dark .study-mode-btn.active,
+    html.dark .timer-action-btn.primary {
+        border-color: rgba(196, 181, 253, 0.75);
+        color: #ffffff;
+    }
+
+    html.dark .timer-settings-panel {
+        background: rgba(15, 23, 42, 0.72);
+        border-color: rgba(196, 181, 253, 0.42);
+    }
+
+    @media (max-width: 640px) {
+        .study-flip-clock {
+            gap: 0.25rem;
+        }
+
+        .flip-colon {
+            margin-inline: 0.05rem;
+        }
+
+        .timer-fullscreen .timer-ui-panel {
+            margin-top: 2rem;
+        }
+    }
+
+    @media (min-width: 1024px) and (max-width: 1440px) {
+        #studyTimerCard {
+            padding-top: 1.1rem;
+            padding-bottom: 1.1rem;
+        }
+
+        #studyTimerCard .mt-7 {
+            margin-top: 1rem;
+        }
+
+        #studyTimerCard .mt-6 {
+            margin-top: 1rem;
+        }
+
+        #studyTimerCard .flip-digit {
+            width: clamp(3.8rem, 10vw, 6.6rem);
+            height: clamp(5.2rem, 14vw, 9.4rem);
+        }
+
+        #studyTimerCard .flip-number {
+            font-size: clamp(2.9rem, 9vw, 6.1rem);
+        }
+
+        #studyTimerCard .flip-colon {
+            font-size: clamp(2.1rem, 6.2vw, 4.3rem);
+        }
+    }
+
+    @media (min-width: 1024px) and (max-height: 820px) {
+        #studyTimerCard {
+            padding-top: 0.95rem;
+            padding-bottom: 0.95rem;
+        }
+
+        #studyTimerCard .mt-5 {
+            margin-top: 0.8rem;
+        }
+
+        #studyTimerCard .mt-7 {
+            margin-top: 0.7rem;
+        }
+
+        #studyTimerCard .flip-digit {
+            width: clamp(3.6rem, 9vw, 6rem);
+            height: clamp(4.9rem, 12vw, 8.5rem);
+        }
+
+        #studyTimerCard .flip-number {
+            font-size: clamp(2.7rem, 8vw, 5.6rem);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-6 lg:space-y-8">
+    <section class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Student Dashboard</h2>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">Welcome back, {{ user.username }}! Track your learning, tests, doubts, and class updates in one place.</p>
+        </div>
+        <a href="{% url 'student_profile' %}" class="inline-flex items-center gap-2 rounded-xl bg-primary-600 text-white px-4 py-2.5 text-sm font-semibold hover:bg-primary-700 transition-colors">
+            <i class="bi bi-person-circle"></i> View Profile
+        </a>
+    </section>
+
+    <section id="studyTimerCard" class="rounded-2xl p-5 lg:p-7 shadow-card study-timer-shell">
+        <div class="timer-ui-panel flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+                <h3 class="text-xl font-extrabold text-slate-100">Study Timer</h3>
+                <p class="mt-1 text-sm text-slate-300">Use focus and break cycles to improve study consistency.</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <p id="timerAmPm" class="timer-ampm text-xs font-semibold">--</p>
+                <button type="button" id="timerFullscreenBtn" class="timer-action-btn" aria-label="Toggle fullscreen timer">
+                    <i id="timerFullscreenIcon" class="bi bi-arrows-fullscreen text-lg"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="timer-ui-panel mt-5 flex flex-wrap items-center gap-2" id="studyModeWrap">
+            <button type="button" class="study-mode-btn" data-mode="short">Short Break</button>
+            <button type="button" class="study-mode-btn active" data-mode="focus">Focus</button>
+            <button type="button" class="study-mode-btn" data-mode="long">Long Break</button>
+        </div>
+
+        <div class="timer-ui-panel mt-7 text-center">
+            <div id="studyFlipClock" class="study-flip-clock" aria-live="polite">
+                <div class="flip-digit" data-slot="m1"><span class="flip-number">2</span></div>
+                <div class="flip-digit" data-slot="m2"><span class="flip-number">5</span></div>
+                <span class="flip-colon">:</span>
+                <div class="flip-digit" data-slot="s1"><span class="flip-number">0</span></div>
+                <div class="flip-digit" data-slot="s2"><span class="flip-number">0</span></div>
+            </div>
+            <p id="studyStatus" class="mt-4 text-sm font-semibold text-slate-300">Ready to start focus session.</p>
+        </div>
+
+        <div class="timer-ui-panel mt-6 flex flex-wrap justify-center gap-3">
+            <button type="button" id="timerStartPauseBtn" class="timer-action-btn primary">Start</button>
+            <button type="button" id="timerResetBtn" class="timer-action-btn" aria-label="Reset timer">
+                <i class="bi bi-arrow-clockwise text-lg"></i>
+            </button>
+            <button type="button" id="timerSettingsBtn" class="timer-action-btn" aria-label="Timer settings">
+                <i class="bi bi-gear-fill text-lg"></i>
+            </button>
+        </div>
+
+        <div id="timerSettingsPanel" class="timer-ui-panel timer-settings-panel mt-5 rounded-xl p-4 hidden">
+            <h4 class="text-sm font-bold text-slate-100">Timer Settings (minutes)</h4>
+            <div class="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <label class="text-sm font-semibold text-slate-200">Focus
+                    <input id="focusMinutesInput" type="number" min="1" max="120" class="mt-1" value="25">
+                </label>
+                <label class="text-sm font-semibold text-slate-200">Short Break
+                    <input id="shortMinutesInput" type="number" min="1" max="60" class="mt-1" value="5">
+                </label>
+                <label class="text-sm font-semibold text-slate-200">Long Break
+                    <input id="longMinutesInput" type="number" min="1" max="90" class="mt-1" value="15">
+                </label>
+            </div>
+            <div class="mt-3 flex justify-end">
+                <button type="button" id="saveTimerSettingsBtn" class="timer-action-btn">Save Durations</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-4">
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <div class="flex items-start justify-between gap-2">
+                <p class="text-sm text-slate-600 dark:text-slate-300">Total Courses</p>
+                <span class="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-fuchsia-500 text-white flex items-center justify-center"><i class="bi bi-journal-bookmark"></i></span>
+            </div>
+            <h3 class="text-3xl font-extrabold mt-3 text-slate-900 dark:text-white">{{ enrollments_count }}</h3>
+            <p class="text-xs text-slate-400 mt-1">Active enrollments</p>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <div class="flex items-start justify-between gap-2">
+                <p class="text-sm text-slate-600 dark:text-slate-300">Tests Completed</p>
+                <span class="h-9 w-9 rounded-xl bg-gradient-to-br from-violet-500 to-pink-500 text-white flex items-center justify-center"><i class="bi bi-ui-checks-grid"></i></span>
+            </div>
+            <h3 class="text-3xl font-extrabold mt-3 text-primary-600">{{ tests_completed_count }}</h3>
+            <p class="text-xs text-slate-400 mt-1">Attempts submitted</p>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <div class="flex items-start justify-between gap-2">
+                <p class="text-sm text-slate-600 dark:text-slate-300">Pending Doubts</p>
+                <span class="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center"><i class="bi bi-question-circle"></i></span>
+            </div>
+            <h3 class="text-3xl font-extrabold mt-3 text-warning">{{ pending_doubts_count }}</h3>
+            <p class="text-xs text-slate-400 mt-1">Awaiting trainer replies</p>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <div class="flex items-start justify-between gap-2">
+                <p class="text-sm text-slate-600 dark:text-slate-300">Resolved Doubts</p>
+                <span class="h-9 w-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white flex items-center justify-center"><i class="bi bi-check2-circle"></i></span>
+            </div>
+            <h3 class="text-3xl font-extrabold mt-3 text-success">{{ resolved_doubts_count }}</h3>
+            <p class="text-xs text-slate-400 mt-1">Closed support threads</p>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <div class="flex items-start justify-between gap-2">
+                <p class="text-sm text-slate-600 dark:text-slate-300">Certificates Earned</p>
+                <span class="h-9 w-9 rounded-xl bg-gradient-to-br from-indigo-500 to-pink-500 text-white flex items-center justify-center"><i class="bi bi-award"></i></span>
+            </div>
+            <h3 class="text-3xl font-extrabold mt-3 text-violet-600">{{ certificates_earned_count }}</h3>
+            <p class="text-xs text-slate-400 mt-1">Approved certifications</p>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <div class="flex items-start justify-between gap-2">
+                <p class="text-sm text-slate-600 dark:text-slate-300">Upcoming Tests</p>
+                <span class="h-9 w-9 rounded-xl bg-gradient-to-br from-sky-500 to-blue-500 text-white flex items-center justify-center"><i class="bi bi-calendar-event"></i></span>
+            </div>
+            <h3 class="text-3xl font-extrabold mt-3 text-sky-600">{{ upcoming_tests_count }}</h3>
+            <p class="text-xs text-slate-400 mt-1">Not attempted yet</p>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <div class="flex items-start justify-between gap-2">
+                <p class="text-sm text-slate-600 dark:text-slate-300">Pending Acknowledgements</p>
+                <span class="h-9 w-9 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500 text-white flex items-center justify-center"><i class="bi bi-journal-check"></i></span>
+            </div>
+            <h3 class="text-3xl font-extrabold mt-3 text-amber-600">{{ pending_acknowledgements_count }}</h3>
+            <p class="text-xs text-slate-400 mt-1">To confirm in Attendance tab</p>
+        </article>
+    </section>
+
+    <section class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">Purchased Learning Access</h3>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">You will only see items you are enrolled in by admin.</p>
+
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {% for item in purchased_cards %}
+            <article class="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                <div class="flex items-center justify-between gap-2">
+                    <h4 class="font-bold text-slate-900 dark:text-white">{{ item.title }}</h4>
+                    <span class="text-[11px] px-2 py-1 rounded-full {% if item.type == 'FULL' %}bg-indigo-100 text-indigo-700{% else %}bg-amber-100 text-amber-700{% endif %} font-semibold">{{ item.type }}</span>
+                </div>
+                <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">Batch: {{ item.batch.name }}</p>
+                {% if item.type == 'FULL' %}
+                <ul class="mt-3 text-sm text-slate-700 dark:text-slate-200 space-y-1">
+                    {% for module in item.modules %}
+                    <li><i class="bi bi-dot"></i> {{ module.name }}</li>
+                    {% empty %}
+                    <li class="text-slate-500">No modules configured yet.</li>
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </article>
+            {% empty %}
+            <p class="text-sm text-slate-600 dark:text-slate-300">No purchases mapped yet. Contact admin for enrollment setup.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">Use Dedicated Tabs</h3>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Dashboard now shows only summary metrics. Use sidebar tabs for detailed actions and pages: Profile, Progress, Courses, Tests, Assignments, Attendance, Certificates, and Raise Doubts.
+        </p>
+    </section>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (() => {
+        const timerCard = document.getElementById('studyTimerCard');
+        const flipClockEl = document.getElementById('studyFlipClock');
+        const amPmEl = document.getElementById('timerAmPm');
+        const fullscreenBtn = document.getElementById('timerFullscreenBtn');
+        const fullscreenIcon = document.getElementById('timerFullscreenIcon');
+        const statusEl = document.getElementById('studyStatus');
+        const modeWrap = document.getElementById('studyModeWrap');
+        const startPauseBtn = document.getElementById('timerStartPauseBtn');
+        const resetBtn = document.getElementById('timerResetBtn');
+        const settingsBtn = document.getElementById('timerSettingsBtn');
+        const settingsPanel = document.getElementById('timerSettingsPanel');
+        const saveSettingsBtn = document.getElementById('saveTimerSettingsBtn');
+        const focusInput = document.getElementById('focusMinutesInput');
+        const shortInput = document.getElementById('shortMinutesInput');
+        const longInput = document.getElementById('longMinutesInput');
+
+        if (!timerCard || !flipClockEl || !amPmEl || !fullscreenBtn || !fullscreenIcon || !statusEl || !modeWrap || !startPauseBtn || !resetBtn || !settingsBtn || !settingsPanel || !saveSettingsBtn || !focusInput || !shortInput || !longInput) {
+            return;
+        }
+
+        const STORAGE_KEY = 'lfi-study-timer-settings-v1';
+        const MODES = {
+            focus: { label: 'Focus', defaultMinutes: 25 },
+            short: { label: 'Short Break', defaultMinutes: 5 },
+            long: { label: 'Long Break', defaultMinutes: 15 },
+        };
+
+        let settings = {
+            focus: MODES.focus.defaultMinutes,
+            short: MODES.short.defaultMinutes,
+            long: MODES.long.defaultMinutes,
+        };
+
+        let mode = 'focus';
+        let secondsLeft = settings[mode] * 60;
+        let timerId = null;
+        let running = false;
+        let previousDisplay = '';
+        let immersiveMode = false;
+
+        const slotMap = {
+            m1: flipClockEl.querySelector('[data-slot="m1"] .flip-number'),
+            m2: flipClockEl.querySelector('[data-slot="m2"] .flip-number'),
+            s1: flipClockEl.querySelector('[data-slot="s1"] .flip-number'),
+            s2: flipClockEl.querySelector('[data-slot="s2"] .flip-number'),
+        };
+
+        const clampMinutes = (value, fallback) => {
+            const num = Number(value);
+            if (!Number.isFinite(num)) return fallback;
+            return Math.max(1, Math.min(120, Math.round(num)));
+        };
+
+        const saveSettings = () => {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+        };
+
+        const loadSettings = () => {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return;
+                const parsed = JSON.parse(raw);
+                settings = {
+                    focus: clampMinutes(parsed.focus, MODES.focus.defaultMinutes),
+                    short: clampMinutes(parsed.short, MODES.short.defaultMinutes),
+                    long: clampMinutes(parsed.long, MODES.long.defaultMinutes),
+                };
+            } catch (error) {
+                settings = {
+                    focus: MODES.focus.defaultMinutes,
+                    short: MODES.short.defaultMinutes,
+                    long: MODES.long.defaultMinutes,
+                };
+            }
+        };
+
+        const syncInputValues = () => {
+            focusInput.value = settings.focus;
+            shortInput.value = settings.short;
+            longInput.value = settings.long;
+        };
+
+        const formatTime = (totalSeconds) => {
+            const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, '0');
+            const seconds = String(totalSeconds % 60).padStart(2, '0');
+            return `${minutes}:${seconds}`;
+        };
+
+        const renderAmPm = () => {
+            const hour = new Date().getHours();
+            amPmEl.textContent = hour >= 12 ? 'PM' : 'AM';
+        };
+
+        const animateDigitSlot = (slotKey, nextValue) => {
+            const digitEl = slotMap[slotKey];
+            if (!digitEl) return;
+            if (digitEl.textContent === nextValue) return;
+            const box = digitEl.closest('.flip-digit');
+            digitEl.textContent = nextValue;
+            if (!box) return;
+            box.classList.remove('flipping');
+            void box.offsetWidth;
+            box.classList.add('flipping');
+        };
+
+        const renderFlipClock = () => {
+            const formatted = formatTime(secondsLeft);
+            if (formatted === previousDisplay) return;
+            const compact = formatted.replace(':', '');
+            animateDigitSlot('m1', compact[0]);
+            animateDigitSlot('m2', compact[1]);
+            animateDigitSlot('s1', compact[2]);
+            animateDigitSlot('s2', compact[3]);
+            previousDisplay = formatted;
+        };
+
+        const setStatus = (text) => {
+            statusEl.textContent = text;
+        };
+
+        const render = () => {
+            renderFlipClock();
+            renderAmPm();
+            const modeButtons = modeWrap.querySelectorAll('[data-mode]');
+            modeButtons.forEach((btn) => {
+                btn.classList.toggle('active', btn.dataset.mode === mode);
+            });
+            if (!running && secondsLeft === settings[mode] * 60) {
+                setStatus(`Ready to start ${MODES[mode].label.toLowerCase()} session.`);
+            }
+            startPauseBtn.textContent = running ? 'Pause' : 'Start';
+            fullscreenIcon.className = immersiveMode ? 'bi bi-fullscreen-exit text-lg' : 'bi bi-arrows-fullscreen text-lg';
+        };
+
+        const updateImmersiveState = () => {
+            immersiveMode = Boolean(document.fullscreenElement && document.fullscreenElement === timerCard) || timerCard.classList.contains('timer-fullscreen');
+            timerCard.classList.toggle('timer-fullscreen', immersiveMode);
+            document.body.classList.toggle('timer-immersive-lock', immersiveMode);
+            render();
+        };
+
+        const toggleFullscreen = async () => {
+            try {
+                if (document.fullscreenEnabled) {
+                    if (!document.fullscreenElement) {
+                        await timerCard.requestFullscreen();
+                    } else if (document.fullscreenElement === timerCard) {
+                        await document.exitFullscreen();
+                    }
+                } else {
+                    immersiveMode = !immersiveMode;
+                    timerCard.classList.toggle('timer-fullscreen', immersiveMode);
+                    document.body.classList.toggle('timer-immersive-lock', immersiveMode);
+                    render();
+                }
+            } catch (error) {
+                immersiveMode = !immersiveMode;
+                timerCard.classList.toggle('timer-fullscreen', immersiveMode);
+                document.body.classList.toggle('timer-immersive-lock', immersiveMode);
+                render();
+            }
+        };
+
+        const stopTimer = () => {
+            if (timerId) {
+                clearInterval(timerId);
+                timerId = null;
+            }
+            running = false;
+            render();
+        };
+
+        const switchMode = (newMode) => {
+            mode = newMode;
+            stopTimer();
+            secondsLeft = settings[mode] * 60;
+            render();
+        };
+
+        const onTimerComplete = () => {
+            stopTimer();
+            setStatus(`${MODES[mode].label} session complete. Great consistency.`);
+        };
+
+        const startTimer = () => {
+            if (running) return;
+            running = true;
+            setStatus(`${MODES[mode].label} session in progress.`);
+            render();
+            timerId = setInterval(() => {
+                secondsLeft -= 1;
+                if (secondsLeft <= 0) {
+                    secondsLeft = 0;
+                    render();
+                    onTimerComplete();
+                    return;
+                }
+                render();
+            }, 1000);
+        };
+
+        modeWrap.addEventListener('click', (event) => {
+            const btn = event.target.closest('[data-mode]');
+            if (!btn) return;
+            const selectedMode = btn.dataset.mode;
+            if (!MODES[selectedMode]) return;
+            switchMode(selectedMode);
+        });
+
+        startPauseBtn.addEventListener('click', () => {
+            if (running) {
+                stopTimer();
+                setStatus(`${MODES[mode].label} session paused.`);
+                return;
+            }
+            startTimer();
+        });
+
+        resetBtn.addEventListener('click', () => {
+            stopTimer();
+            secondsLeft = settings[mode] * 60;
+            render();
+            setStatus(`${MODES[mode].label} session reset.`);
+        });
+
+        settingsBtn.addEventListener('click', () => {
+            settingsPanel.classList.toggle('hidden');
+        });
+
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+        document.addEventListener('fullscreenchange', updateImmersiveState);
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && immersiveMode && !document.fullscreenElement) {
+                immersiveMode = false;
+                timerCard.classList.remove('timer-fullscreen');
+                document.body.classList.remove('timer-immersive-lock');
+                render();
+            }
+        });
+
+        saveSettingsBtn.addEventListener('click', () => {
+            settings.focus = clampMinutes(focusInput.value, settings.focus);
+            settings.short = clampMinutes(shortInput.value, settings.short);
+            settings.long = clampMinutes(longInput.value, settings.long);
+            saveSettings();
+            syncInputValues();
+            secondsLeft = settings[mode] * 60;
+            stopTimer();
+            render();
+            setStatus('Timer durations saved.');
+        });
+
+        loadSettings();
+        syncInputValues();
+        secondsLeft = settings[mode] * 60;
+        renderAmPm();
+        setInterval(renderAmPm, 30000);
+        render();
+    })();
+</script>
+{% endblock %}

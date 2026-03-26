@@ -1,0 +1,252 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="space-y-6 lg:space-y-8">
+    <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Trainer Profile Dashboard</h2>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">Professional profile, training assignments, and performance metrics.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            {% if not edit_mode %}
+            <a href="{% url 'trainer_profile' %}?edit=1" class="inline-flex items-center gap-2 rounded-xl bg-primary-600 text-white px-4 py-2.5 text-sm font-semibold hover:bg-primary-700 transition-colors">
+                <i class="bi bi-pencil-square"></i> Edit Profile
+            </a>
+            {% endif %}
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </section>
+
+    {% if messages %}
+    <section class="space-y-2">
+        {% for message in messages %}
+        <div class="rounded-xl p-3 text-sm {% if message.tags == 'success' %}border border-emerald-200 bg-emerald-50 text-emerald-700{% else %}border border-rose-200 bg-rose-50 text-rose-700{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </section>
+    {% endif %}
+
+    <section class="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
+        <aside class="xl:col-span-1 space-y-4">
+            <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-6 shadow-card">
+                <div class="text-center">
+                    {% if trainer_profile_data.profile_photo %}
+                    <img src="{{ trainer_profile_data.profile_photo.url }}" alt="Trainer photo" class="mx-auto h-28 w-28 rounded-2xl object-cover border border-slate-200 shadow-sm">
+                    {% else %}
+                    <div class="mx-auto h-28 w-28 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-500 text-white flex items-center justify-center text-4xl shadow-sm">
+                        <i class="bi bi-person-workspace"></i>
+                    </div>
+                    {% endif %}
+                    <h3 class="mt-4 text-xl font-bold text-slate-900 dark:text-white">{{ trainer_profile_data.full_name }}</h3>
+                    <p class="text-sm text-slate-600 dark:text-slate-300">{{ trainer_profile_data.email }}</p>
+                    <span class="inline-flex mt-3 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 px-3 py-1 text-xs font-semibold">{{ trainer_profile_data.role_badge }}</span>
+                    {% if not edit_mode %}
+                    <a href="{% url 'trainer_profile' %}?edit=1" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-colors">
+                        <i class="bi bi-pencil-square"></i> Edit Profile Details
+                    </a>
+                    {% endif %}
+                </div>
+
+                <div class="mt-6 space-y-3 text-sm">
+                    <div class="flex justify-between gap-3"><span class="text-slate-600 dark:text-slate-300">Department / Domain</span><span class="font-medium text-slate-900 dark:text-white text-right">{{ trainer_profile_data.department_domain }}</span></div>
+                    <div class="flex justify-between gap-3"><span class="text-slate-600 dark:text-slate-300">Years of Experience</span><span class="font-medium text-slate-900 dark:text-white text-right">{{ trainer_profile_data.years_of_experience }}</span></div>
+                </div>
+            </article>
+
+            <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Quick Stats</h3>
+                <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 xl:grid-cols-1 gap-3 text-sm">
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-700/40 p-3">
+                        <p class="text-slate-600 dark:text-slate-300">Courses Handled</p>
+                        <p class="text-xl font-extrabold text-slate-900 dark:text-white">{{ trainer_stats.courses_handled }}</p>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-700/40 p-3">
+                        <p class="text-slate-600 dark:text-slate-300">Total Batches</p>
+                        <p class="text-xl font-extrabold text-slate-900 dark:text-white">{{ trainer_stats.total_batches }}</p>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 dark:bg-slate-700/40 p-3">
+                        <p class="text-slate-600 dark:text-slate-300">Students Trained</p>
+                        <p class="text-xl font-extrabold text-slate-900 dark:text-white">{{ trainer_stats.students_trained }}</p>
+                    </div>
+                </div>
+            </article>
+        </aside>
+
+        <div class="xl:col-span-2 space-y-4 lg:space-y-6">
+            <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2"><i class="bi bi-person-vcard"></i> Personal Information</h3>
+                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    <div class="rounded-xl border border-slate-200 p-3"><p class="text-slate-600 dark:text-slate-300">Full Name</p><p class="font-semibold text-slate-900 dark:text-white">{{ trainer_profile_data.full_name }}</p></div>
+                    <div class="rounded-xl border border-slate-200 p-3"><p class="text-slate-600 dark:text-slate-300">Father Name</p><p class="font-semibold text-slate-900 dark:text-white">{{ trainer_profile_data.father_name }}</p></div>
+                    <div class="rounded-xl border border-slate-200 p-3"><p class="text-slate-600 dark:text-slate-300">Date of Birth</p><p class="font-semibold text-slate-900 dark:text-white">{{ trainer_profile_data.date_of_birth }}</p></div>
+                    <div class="rounded-xl border border-slate-200 p-3"><p class="text-slate-600 dark:text-slate-300">Gender</p><p class="font-semibold text-slate-900 dark:text-white">{{ trainer_profile_data.gender }}</p></div>
+                    <div class="rounded-xl border border-slate-200 p-3"><p class="text-slate-600 dark:text-slate-300">Contact Number</p><p class="font-semibold text-slate-900 dark:text-white">{{ trainer_profile_data.contact_number }}</p></div>
+                    <div class="rounded-xl border border-slate-200 p-3"><p class="text-slate-600 dark:text-slate-300">Address / Pincode</p><p class="font-semibold text-slate-900 dark:text-white">{{ trainer_profile_data.address }}{% if trainer_profile_data.pincode != '-' %}, {{ trainer_profile_data.pincode }}{% endif %}</p></div>
+                </div>
+            </article>
+
+            <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2"><i class="bi bi-briefcase"></i> Professional Information</h3>
+                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    <div class="rounded-xl border border-slate-200 p-3"><p class="text-slate-600 dark:text-slate-300">Trainer ID</p><p class="font-semibold text-slate-900 dark:text-white">{{ trainer_profile_data.trainer_id }}</p></div>
+                    <div class="rounded-xl border border-slate-200 p-3"><p class="text-slate-600 dark:text-slate-300">Department / Domain</p><p class="font-semibold text-slate-900 dark:text-white">{{ trainer_profile_data.department_domain }}</p></div>
+                    <div class="rounded-xl border border-slate-200 p-3"><p class="text-slate-600 dark:text-slate-300">Highest Education</p><p class="font-semibold text-slate-900 dark:text-white">{{ trainer_profile_data.highest_education }}</p></div>
+                    <div class="rounded-xl border border-slate-200 p-3"><p class="text-slate-600 dark:text-slate-300">Years of Experience</p><p class="font-semibold text-slate-900 dark:text-white">{{ trainer_profile_data.years_of_experience }}</p></div>
+                    <div class="rounded-xl border border-slate-200 p-3 sm:col-span-2"><p class="text-slate-600 dark:text-slate-300">Specialization</p><p class="font-semibold text-slate-900 dark:text-white">{{ trainer_profile_data.specialization }}</p></div>
+                </div>
+            </article>
+
+            <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2"><i class="bi bi-journal-richtext"></i> Training Information</h3>
+                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                    <div class="rounded-xl border border-slate-200 p-3 sm:col-span-2">
+                        <p class="text-slate-600 dark:text-slate-300">Courses Assigned</p>
+                        {% if courses_assigned %}
+                        <p class="font-semibold text-slate-900 dark:text-white">{{ courses_assigned|join:", " }}</p>
+                        {% else %}
+                        <p class="font-semibold text-slate-900 dark:text-white">-</p>
+                        {% endif %}
+                    </div>
+                    <div class="rounded-xl border border-slate-200 p-3">
+                        <p class="text-slate-600 dark:text-slate-300">Active Batches</p>
+                        <p class="font-semibold text-slate-900 dark:text-white">{{ trainer_stats.total_batches }}</p>
+                    </div>
+                    <div class="rounded-xl border border-slate-200 p-3">
+                        <p class="text-slate-600 dark:text-slate-300">Session Schedules</p>
+                        {% if session_schedules %}
+                        <ul class="mt-1 space-y-1 text-slate-900 dark:text-white font-medium">
+                            {% for item in session_schedules %}
+                            <li>{{ item.0 }}: {{ item.1|date:"M d" }} - {{ item.2|date:"M d, Y" }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="font-semibold text-slate-900 dark:text-white">-</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </article>
+
+            <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2"><i class="bi bi-graph-up-arrow"></i> Performance Metrics</h3>
+                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="rounded-xl border border-slate-200 p-4"><p class="text-xs text-slate-600 dark:text-slate-300">Total Courses</p><p class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ trainer_stats.total_courses }}</p></div>
+                    <div class="rounded-xl border border-slate-200 p-4"><p class="text-xs text-slate-600 dark:text-slate-300">Total Students</p><p class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ trainer_stats.total_students }}</p></div>
+                    <div class="rounded-xl border border-slate-200 p-4"><p class="text-xs text-slate-600 dark:text-slate-300">Completed Sessions</p><p class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ trainer_stats.completed_sessions }}</p></div>
+                    <div class="rounded-xl border border-slate-200 p-4"><p class="text-xs text-slate-600 dark:text-slate-300">Average Test Score</p><p class="text-2xl font-extrabold text-slate-900 dark:text-white">{{ trainer_stats.average_test_score }}</p></div>
+                </div>
+            </article>
+
+            {% if edit_mode %}
+            <article id="edit-profile" class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2"><i class="bi bi-pencil-square"></i> Update Profile Details</h3>
+                <form method="post" enctype="multipart/form-data" class="mt-4 space-y-4">
+                    {% csrf_token %}
+                    {% if trainer_form.non_field_errors %}
+                    <div class="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-500/20 p-3 text-sm text-rose-700">
+                        {{ trainer_form.non_field_errors }}
+                    </div>
+                    {% endif %}
+                    {% if trainer_form.errors %}
+                    <div class="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-500/20 p-3 text-sm text-rose-700">
+                        <p class="font-semibold">Please fix the following fields:</p>
+                        <ul class="mt-1 list-disc pl-5">
+                            {% for field in trainer_form %}
+                                {% for error in field.errors %}
+                                <li>{{ field.label }}: {{ error }}</li>
+                                {% endfor %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <label class="block text-slate-700 dark:text-slate-300 mb-1" for="id_profile_photo">Profile Photo</label>
+                            {{ trainer_form.profile_photo }}
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 dark:text-slate-300 mb-1" for="id_full_name">Full Name</label>
+                            {{ trainer_form.full_name }}
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 dark:text-slate-300 mb-1" for="id_father_name">Father Name</label>
+                            {{ trainer_form.father_name }}
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 dark:text-slate-300 mb-1" for="id_date_of_birth">Date of Birth</label>
+                            {{ trainer_form.date_of_birth }}
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 dark:text-slate-300 mb-1" for="id_gender">Gender</label>
+                            {{ trainer_form.gender }}
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 dark:text-slate-300 mb-1" for="id_contact_number">Contact Number</label>
+                            {{ trainer_form.contact_number }}
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-slate-700 dark:text-slate-300 mb-1" for="id_address">Address</label>
+                            {{ trainer_form.address }}
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 dark:text-slate-300 mb-1" for="id_pincode">Pincode</label>
+                            {{ trainer_form.pincode }}
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 dark:text-slate-300 mb-1" for="id_trainer_id">Trainer ID</label>
+                            {{ trainer_form.trainer_id }}
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 dark:text-slate-300 mb-1" for="id_department">Department / Domain</label>
+                            {{ trainer_form.department }}
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 dark:text-slate-300 mb-1" for="id_highest_education">Highest Education</label>
+                            {{ trainer_form.highest_education }}
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 dark:text-slate-300 mb-1" for="id_years_of_experience">Years of Experience</label>
+                            {{ trainer_form.years_of_experience }}
+                        </div>
+                        <div>
+                            <label class="block text-slate-700 dark:text-slate-300 mb-1" for="id_specialization">Specialization</label>
+                            {{ trainer_form.specialization }}
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2">
+                        <a href="{% url 'trainer_profile' %}" class="rounded-xl border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">Cancel</a>
+                        <button type="submit" class="rounded-xl btn-gradient text-white px-5 py-2.5 text-sm font-semibold transition-all shadow-sm">Save Profile</button>
+                    </div>
+                </form>
+            </article>
+            {% endif %}
+
+            <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2"><i class="bi bi-lightning-charge"></i> Quick Actions</h3>
+                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <a href="{% url 'material_create' %}" class="rounded-xl border border-slate-200 p-4 hover:border-primary-300 hover:bg-primary-50 transition-colors">
+                        <p class="font-semibold text-slate-900 dark:text-white">Upload Materials</p>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">Publish notes, files, and links.</p>
+                    </a>
+                    <a href="{% url 'test_create' %}" class="rounded-xl border border-slate-200 p-4 hover:border-amber-300 hover:bg-amber-50 transition-colors">
+                        <p class="font-semibold text-slate-900 dark:text-white">Create Test</p>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">Author and schedule assessments.</p>
+                    </a>
+                    <a href="{% url 'trainer_session_list' %}" class="rounded-xl border border-slate-200 p-4 hover:border-emerald-300 hover:bg-emerald-50 transition-colors">
+                        <p class="font-semibold text-slate-900 dark:text-white">Mark Attendance</p>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">Manage sessions and attendance.</p>
+                    </a>
+                    <a href="{% url 'student_performance_list' %}" class="rounded-xl border border-slate-200 p-4 hover:border-violet-300 hover:bg-violet-50 transition-colors">
+                        <p class="font-semibold text-slate-900 dark:text-white">Recommend Students</p>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">Recommend for certification.</p>
+                    </a>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+{% endblock %}

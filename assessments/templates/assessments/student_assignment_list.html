@@ -1,0 +1,47 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="space-y-6 lg:space-y-8">
+    <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Assignments</h2>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">Submit assignments and check marks with trainer feedback.</p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 lg:gap-6">
+        {% for card in assignment_cards %}
+        {% with assignment=card.assignment submission=card.submission %}
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <h3 class="text-lg font-bold text-slate-900 dark:text-white">{{ assignment.title }}</h3>
+            <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ assignment.course.title }} | {{ assignment.batch.name }}</p>
+            <p class="text-sm text-slate-600 mt-3">{{ assignment.description|truncatechars:130 }}</p>
+            <div class="mt-4 text-sm space-y-1">
+                <p><span class="text-slate-600 dark:text-slate-300">Due:</span> {{ assignment.due_date|date:"M d, Y H:i" }}</p>
+                <p><span class="text-slate-600 dark:text-slate-300">Max Marks:</span> {{ assignment.max_marks }}</p>
+            </div>
+            <div class="mt-4">
+                {% if submission %}
+                <div class="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm">
+                    <p class="font-semibold text-slate-900 dark:text-white">Status: {{ submission.get_status_display }}</p>
+                    <p class="text-slate-700 dark:text-slate-200 mt-1">Marks: {{ submission.marks_obtained|default:'-' }}</p>
+                    <p class="text-slate-600 dark:text-slate-300 mt-1">Feedback: {{ submission.feedback|default:'No feedback yet.' }}</p>
+                </div>
+                {% endif %}
+                <a href="{% url 'assignment_submit' assignment_id=assignment.id %}" class="mt-3 inline-flex items-center gap-2 rounded-xl btn-gradient text-white px-4 py-2 text-sm font-semibold shadow-sm">
+                    <i class="bi bi-upload"></i> {% if submission %}Update Submission{% else %}Submit Assignment{% endif %}
+                </a>
+            </div>
+        </article>
+        {% endwith %}
+        {% empty %}
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-6 shadow-card col-span-full">
+            <p class="text-sm text-slate-600 dark:text-slate-300">No assignments available for your batches.</p>
+        </article>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

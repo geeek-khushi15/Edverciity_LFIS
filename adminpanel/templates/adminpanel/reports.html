@@ -1,0 +1,108 @@
+{% extends 'adminpanel/base.html' %}
+{% block title %}Reports{% endblock %}
+{% block page_title %}Reports & Analytics{% endblock %}
+{% block nav_reports %}active{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Enrollment by type -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="card">
+            <h3 class="font-bold text-slate-800 mb-4">Enrollment Split</h3>
+            <div class="space-y-3">
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="font-semibold text-slate-700">Full Course</span>
+                        <span class="font-bold text-indigo-600">{{ enrollment_by_type.FULL }}</span>
+                    </div>
+                    {% with total=enrollment_by_type.FULL|add:enrollment_by_type.MODULE %}
+                    {% if total > 0 %}
+                    <div class="h-2.5 rounded-full bg-slate-100">
+                        <div class="h-2.5 rounded-full" style="background:#7c5cff; width:{% widthratio enrollment_by_type.FULL total 100 %}%"></div>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span class="font-semibold text-slate-700">Module Only</span>
+                        <span class="font-bold text-pink-600">{{ enrollment_by_type.MODULE }}</span>
+                    </div>
+                    {% with total=enrollment_by_type.FULL|add:enrollment_by_type.MODULE %}
+                    {% if total > 0 %}
+                    <div class="h-2.5 rounded-full bg-slate-100">
+                        <div class="h-2.5 rounded-full bg-pink-500" style="width:{% widthratio enrollment_by_type.MODULE total 100 %}%"></div>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly enrollments (this year) -->
+        <div class="card">
+            <h3 class="font-bold text-slate-800 mb-4">Monthly Enrollments ({{ today.year|default:"This Year" }})</h3>
+            {% if monthly_enrollments %}
+            <div class="space-y-2">
+                {% for row in monthly_enrollments %}
+                <div class="flex items-center gap-3 text-sm">
+                    <span class="w-8 text-slate-400 font-mono font-semibold">{{ row.month }}</span>
+                    <div class="flex-1 h-2 rounded-full bg-slate-100">
+                        <div class="h-2 rounded-full" style="background:#7c5cff; width:min({{ row.count }}0%, 100%)"></div>
+                    </div>
+                    <span class="w-6 text-right font-bold text-slate-700">{{ row.count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-slate-400 text-sm">No enrollments this year yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Top courses -->
+    <div class="card">
+        <h3 class="font-bold text-slate-800 mb-4">Top Courses by Enrollment</h3>
+        <div class="overflow-x-auto">
+            <table>
+                <thead><tr><th>Rank</th><th>Course</th><th>Enrollments</th></tr></thead>
+                <tbody>
+                    {% for c in top_courses %}
+                    <tr>
+                        <td class="font-bold text-slate-400">{{ forloop.counter }}</td>
+                        <td class="font-semibold text-slate-800">{{ c.title }}</td>
+                        <td><span class="badge badge-blue">{{ c.enrollment_count }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="3" class="text-center text-slate-400 py-4">No data yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Top students -->
+    <div class="card">
+        <h3 class="font-bold text-slate-800 mb-4">Most Active Students (by Test Attempts)</h3>
+        <div class="overflow-x-auto">
+            <table>
+                <thead><tr><th>Rank</th><th>Student</th><th>Email</th><th>Test Attempts</th></tr></thead>
+                <tbody>
+                    {% for s in top_students %}
+                    <tr>
+                        <td class="font-bold text-slate-400">{{ forloop.counter }}</td>
+                        <td class="font-semibold text-indigo-700">{{ s.username }}</td>
+                        <td>{{ s.email }}</td>
+                        <td><span class="badge badge-purple">{{ s.attempt_count }}</span></td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center text-slate-400 py-4">No data yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

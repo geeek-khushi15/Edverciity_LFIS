@@ -1,0 +1,60 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="space-y-6 lg:space-y-8">
+    <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Check Tests</h2>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">View all tests created for your assigned batches.</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'trainer_test_results' %}" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+                <i class="bi bi-bar-chart"></i> View Results
+            </a>
+            <a href="{% url 'test_create' %}" class="inline-flex items-center gap-2 rounded-xl btn-gradient text-white px-4 py-2.5 text-sm font-semibold shadow-sm">
+                <i class="bi bi-plus-circle"></i> Create Test
+            </a>
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
+    </section>
+
+    <section class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+        <div class="overflow-x-auto">
+            {% if tests %}
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-slate-600 dark:text-slate-300 border-b border-slate-200">
+                        <th class="py-3 pr-4">Test</th>
+                        <th class="py-3 pr-4">Batch</th>
+                        <th class="py-3 pr-4">Course</th>
+                        <th class="py-3 pr-4">Schedule</th>
+                        <th class="py-3 pr-4">Questions</th>
+                        <th class="py-3 pr-4">Attempts</th>
+                        <th class="py-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for test in tests %}
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td class="py-3 pr-4 font-semibold text-slate-900 dark:text-white">{{ test.title }}</td>
+                        <td class="py-3 pr-4 text-slate-600 dark:text-slate-300">{{ test.batch.name }}</td>
+                        <td class="py-3 pr-4 text-slate-600 dark:text-slate-300">{{ test.batch.course.title }}</td>
+                        <td class="py-3 pr-4 text-slate-600 dark:text-slate-300">{% if test.start_time %}{{ test.start_time|date:"M d, H:i" }}{% else %}-{% endif %} - {% if test.end_time %}{{ test.end_time|date:"M d, H:i" }}{% else %}-{% endif %}</td>
+                        <td class="py-3 pr-4 text-slate-700 dark:text-slate-200">{{ test.questions_total }}</td>
+                        <td class="py-3 pr-4 text-slate-700 dark:text-slate-200">{{ test.attempt_count }}</td>
+                        <td class="py-3">
+                            <a href="{% url 'test_detail' pk=test.id %}" class="text-sm font-semibold text-primary-700 hover:text-primary-600">Open</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-sm text-slate-600 dark:text-slate-300">No tests found for your batches yet.</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

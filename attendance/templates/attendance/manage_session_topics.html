@@ -1,0 +1,78 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto mt-8">
+    
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <div>
+            <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">Trainer Syllabus Tracker</h2>
+            <p class="text-gray-500 text-sm mt-1">Check off the topics you successfully completed for this class session.</p>
+        </div>
+        <a href="{% url 'trainer_session_list' %}" class="inline-flex items-center px-4 py-2 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            <i class="bi bi-arrow-left mr-2"></i> Back to Sessions
+        </a>
+    </div>
+
+    <!-- Summary Card -->
+    <div class="bg-indigo-600 rounded-2xl p-6 text-white mb-8 shadow-sm flex flex-col md:flex-row justify-between md:items-center">
+        <div>
+            <span class="bg-indigo-500 text-indigo-100 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-3 inline-block">{{ session.batch.name }}</span>
+            <h3 class="text-xl font-bold mb-1"><i class="bi bi-calendar-event mr-2"></i> {{ session.date|date:"F d, Y" }}</h3>
+        </div>
+        <div class="mt-4 md:mt-0 text-right">
+            <p class="text-sm text-indigo-200 font-medium">Total Topics Logged</p>
+            <p class="text-3xl font-black">{{ topics|length }}</p>
+        </div>
+    </div>
+
+    <form method="post" action="">
+        {% csrf_token %}
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-1/2">Topic Detail</th>
+                        <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Trainer Taught</th>
+                        <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Student Understood</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for topic in topics %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-5 whitespace-nowrap text-sm font-bold text-gray-800">
+                            {{ topic.topic_name }}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-center">
+                            {% if topic.trainer_taught %}
+                                <div class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 border border-emerald-200">
+                                    <i class="bi bi-check2-all text-lg mr-1.5"></i> <span class="text-xs font-bold">Verified</span>
+                                </div>
+                            {% else %}
+                                <input type="checkbox" name="taught_{{ topic.id }}" class="w-6 h-6 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 cursor-pointer">
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-5 whitespace-nowrap text-center">
+                            <div class="inline-flex items-center px-3 py-1 rounded-full bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed" title="Only students can modify this column">
+                                <i class="bi bi-dash-circle text-lg mr-1.5"></i> <span class="text-xs font-bold">Awaiting Student</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="px-6 py-12 text-center text-gray-500">
+                            No topics were listed for this session.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+                <p class="text-xs text-gray-500"><i class="bi bi-info-circle mr-1"></i> Once marked as 'Verified', the status becomes locked.</p>
+                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-lg hover:bg-indigo-700 shadow-sm transition-colors focus:ring-4 focus:ring-indigo-200">
+                    Lock In Selected Topics
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

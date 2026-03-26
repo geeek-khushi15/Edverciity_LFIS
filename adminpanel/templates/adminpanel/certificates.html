@@ -1,0 +1,58 @@
+{% extends 'adminpanel/base.html' %}
+{% block title %}Certificates{% endblock %}
+{% block page_title %}Certification Applications{% endblock %}
+{% block nav_certificates %}active{% endblock %}
+
+{% block content %}
+<div class="card">
+    <!-- Status tabs -->
+    <div class="flex items-center gap-3 mb-5">
+        <a href="?" class="px-4 py-1.5 rounded-full text-sm font-semibold transition
+            {% if not status_filter %}text-white{% else %}text-slate-500 bg-slate-100 hover:bg-slate-200{% endif %}"
+           {% if not status_filter %}style="background:#7c5cff"{% endif %}>
+            All
+        </a>
+        <a href="?status=PENDING" class="px-4 py-1.5 rounded-full text-sm font-semibold transition
+            {% if status_filter == 'PENDING' %}text-white bg-amber-500{% else %}text-amber-700 bg-amber-100 hover:bg-amber-200{% endif %}">
+            Pending ({{ counts.PENDING }})
+        </a>
+        <a href="?status=APPROVED" class="px-4 py-1.5 rounded-full text-sm font-semibold transition
+            {% if status_filter == 'APPROVED' %}text-white bg-emerald-600{% else %}text-emerald-700 bg-emerald-100 hover:bg-emerald-200{% endif %}">
+            Approved ({{ counts.APPROVED }})
+        </a>
+        <a href="?status=REJECTED" class="px-4 py-1.5 rounded-full text-sm font-semibold transition
+            {% if status_filter == 'REJECTED' %}text-white bg-red-600{% else %}text-red-700 bg-red-100 hover:bg-red-200{% endif %}">
+            Rejected ({{ counts.REJECTED }})
+        </a>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table>
+            <thead>
+                <tr><th>#</th><th>Student</th><th>Batch</th><th>Status</th><th>Applied</th></tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td class="text-slate-400">{{ forloop.counter }}</td>
+                    <td class="font-semibold text-indigo-700">{{ app.student.username }}</td>
+                    <td>{{ app.batch.name }}</td>
+                    <td>
+                        {% if app.status == 'PENDING' %}
+                        <span class="badge badge-yellow">Pending</span>
+                        {% elif app.status == 'APPROVED' %}
+                        <span class="badge badge-green">Approved</span>
+                        {% else %}
+                        <span class="badge badge-red">Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-slate-400">{{ app.applied_at|date:"d M Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-slate-400 py-6">No applications found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

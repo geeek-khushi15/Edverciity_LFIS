@@ -1,0 +1,206 @@
+{% extends 'accounts/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4>Employee Face Setup</h4>
+                </div>
+                <div class="card-body text-center">
+                    <p>Welcome, {{ trainer.username }}. Please set up your employee face authentication to proceed.</p>
+                    
+                    <div class="video-container mb-3" style="position: relative; width: 100%; max-width: 640px; margin: 0 auto; min-height: 480px; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 8px;">
+                        <video id="video-feed" autoplay muted playsinline style="width: 100%; height: auto; position: absolute; z-index: 1; transform: scaleX(-1);"></video>
+                        <canvas id="overlay-canvas" style="position: absolute; top: 0; left: 0; z-index: 2; width: 100%; height: 100%; pointer-events: none;"></canvas>
+                        <div id="loading-indicator" style="position: absolute; z-index: 3; color: white;">Loading camera...</div>
+                    </div>
+
+                    <div id="status-message" class="alert alert-info mt-3" style="display: none;"></div>
+                    
+                    <button id="register-btn" class="btn btn-success mt-3 w-100" disabled>
+                        <i class="mdi mdi-camera"></i> Register My Face
+                    </button>
+                    
+                    <a href="{% url 'login' %}" class="btn btn-outline-secondary mt-3 w-100">Cancel & Return to Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+    const video = document.getElementById('video-feed');
+    const canvas = document.getElementById('overlay-canvas');
+    const registerBtn = document.getElementById('register-btn');
+    const statusMsg = document.getElementById('status-message');
+    const loadingIndicator = document.getElementById('loading-indicator');
+    
+    let isModelsLoaded = false;
+    let faceDescriptor = null;
+    let displaySize = null;
+
+    function showStatus(message, type = 'info') {
+        statusMsg.textContent = message;
+        statusMsg.className = `alert alert-${type} mt-3`;
+        statusMsg.style.display = 'block';
+    }
+
+    const MODEL_URLS = [
+        'https://raw.githubusercontent.com/justadudewhohacks/face-api.js/master/weights/',
+        '/static/models/',
+        'https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@master/weights/'
+    ];
+
+    async function loadModels(index = 0) {
+        if (index >= MODEL_URLS.length) {
+            showStatus('Failed to load face detection models.', 'danger');
+            loadingIndicator.textContent = 'Model load failed';
+            return false;
+        }
+
+        const url = MODEL_URLS[index];
+        try {
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(url),
+                faceapi.nets.faceLandmark68Net.loadFromUri(url),
+                faceapi.nets.faceRecognitionNet.loadFromUri(url)
+            ]);
+            showStatus('Models loaded successfully! Starting camera...', 'success');
+            return true;
+        } catch (error) {
+            return await loadModels(index + 1);
+        }
+    }
+
+    async function startCamera() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, 
+                audio: false 
+            });
+            video.srcObject = stream;
+            
+            return new Promise((resolve) => {
+                video.onloadedmetadata = () => {
+                    loadingIndicator.style.display = 'none';
+                    video.play();
+                    resolve(true);
+                };
+            });
+        } catch (err) {
+            loadingIndicator.style.display = 'none';
+            showStatus('Camera access error.', 'danger');
+            return false;
+        }
+    }
+
+    async function init() {
+         isModelsLoaded = await loadModels();
+         if (!isModelsLoaded) return;
+         
+         const cameraStarted = await startCamera();
+         if (!cameraStarted) return;
+         
+         setupDetection();
+    }
+
+    function setupDetection() {
+        displaySize = { width: video.videoWidth, height: video.videoHeight };
+        canvas.width = displaySize.width;
+        canvas.height = displaySize.height;
+        faceapi.matchDimensions(canvas, displaySize);
+        
+        showStatus('Camera ready. Please look straight and hold still.', 'info');
+
+        setInterval(async () => {
+            if (video.paused || video.ended || !isModelsLoaded) return;
+
+            try {
+                const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions())
+                                             .withFaceLandmarks()
+                                             .withFaceDescriptor();
+
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (detection) {
+                    const resizedDetection = faceapi.resizeResults(detection, displaySize);
+                    
+                    faceapi.draw.drawDetections(canvas, resizedDetection);
+                    faceapi.draw.drawFaceLandmarks(canvas, resizedDetection);
+                    
+                    if (detection.detection.score > 0.8) {
+                        faceDescriptor = detection.descriptor;
+                        registerBtn.disabled = false;
+                        registerBtn.classList.remove('btn-secondary');
+                        registerBtn.classList.add('btn-success');
+                        registerBtn.innerHTML = '<i class="mdi mdi-camera-plus"></i> Face Detected - Click to Register';
+                        
+                        ctx.fillStyle = "rgba(0, 255, 0, 0.2)";
+                        ctx.fillRect(resizedDetection.detection.box.x, resizedDetection.detection.box.y, resizedDetection.detection.box.width, resizedDetection.detection.box.height);
+
+                    } else {
+                        faceDescriptor = null;
+                        registerBtn.disabled = true;
+                        registerBtn.innerHTML = '<i class="mdi mdi-alert"></i> Move closer / better lighting';
+                    }
+                } else {
+                    faceDescriptor = null;
+                    registerBtn.disabled = true;
+                    registerBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Looking for face...';
+                }
+            } catch (error) {
+                console.warn("Detection frame error:", error);
+            }
+        }, 150);
+    }
+
+    registerBtn.addEventListener('click', async () => {
+        if (!faceDescriptor) return;
+
+        registerBtn.disabled = true;
+        registerBtn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Saving...';
+        showStatus('Registering face...', 'info');
+
+        try {
+            const response = await fetch('/accounts/api/employee-verify/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}' 
+                },
+                body: JSON.stringify({
+                    action: 'register_face',
+                    descriptor: Array.from(faceDescriptor)
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                showStatus('Face registered successfully! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = data.redirect;
+                }, 1500);
+            } else {
+                showStatus(`Registration failed: ${data.error}`, 'danger');
+                registerBtn.disabled = false;
+                registerBtn.innerHTML = '<i class="mdi mdi-camera"></i> Try Again';
+            }
+        } catch (error) {
+            showStatus('Network error during registration.', 'danger');
+            registerBtn.disabled = false;
+            registerBtn.innerHTML = '<i class="mdi mdi-camera"></i> Try Again';
+        }
+    });
+
+    init();
+});
+</script>
+{% endblock %}

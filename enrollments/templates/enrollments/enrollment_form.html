@@ -1,0 +1,31 @@
+{% extends 'accounts/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="space-y-5 max-w-3xl mx-auto">
+    {% if messages %}
+        {% for message in messages %}
+        <div class="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 shadow-card">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <section class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-6 shadow-card">
+        <div class="flex items-center justify-between gap-3 mb-5">
+            <div>
+                <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">Admin Enrollment</h2>
+                <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">Assign students to full course or module-level access.</p>
+            </div>
+            <a href="{% url 'enrollment_list' %}" class="text-sm font-semibold text-slate-600 hover:text-slate-900 dark:text-white">Enrollment List</a>
+        </div>
+
+        <form method="post" class="space-y-4">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="flex justify-end gap-2 pt-2">
+                <a href="{% url 'enrollment_list' %}" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancel</a>
+                <button type="submit" class="rounded-xl btn-gradient text-white px-4 py-2.5 text-sm font-semibold shadow-sm">Save Enrollment</button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

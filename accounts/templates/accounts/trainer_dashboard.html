@@ -1,0 +1,64 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="space-y-6 lg:space-y-8">
+    <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Trainer Dashboard</h2>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">Welcome back, Trainer {{ user.username }}! Manage student progress, batch delivery, attendance, and doubts.</p>
+        </div>
+        <a href="{% url 'trainer_profile' %}" class="inline-flex items-center gap-2 rounded-xl bg-primary-600 text-white px-4 py-2.5 text-sm font-semibold hover:bg-primary-700 transition-colors">
+            <i class="bi bi-person-badge"></i> My Profile
+        </a>
+    </section>
+
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+            <p class="text-sm text-slate-600 dark:text-slate-300">Total Students</p>
+            <h3 class="text-3xl font-extrabold mt-2 text-slate-900 dark:text-white">{{ enrolled_students_count }}</h3>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+            <p class="text-sm text-slate-600 dark:text-slate-300">Active Batches</p>
+            <h3 class="text-3xl font-extrabold mt-2 text-primary-600">{{ batches|length }}</h3>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+            <p class="text-sm text-slate-600 dark:text-slate-300">Pending Doubts</p>
+            <h3 class="text-3xl font-extrabold mt-2 text-warning">{{ trainer_pending_doubts_count }}</h3>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+            <p class="text-sm text-slate-600 dark:text-slate-300">Attendance Days (This Month)</p>
+            <h3 class="text-3xl font-extrabold mt-2 text-success">{{ attendance_days_this_month }}</h3>
+        </article>
+    </section>
+
+    <section class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">Use Dedicated Tabs</h3>
+        <p class="mt-2 text-sm text-slate-600 dark:text-slate-300">
+            Dashboard now shows only summary metrics. Open feature-specific tabs from the sidebar for Courses, Tests, Assignments, Attendance, Certificates, and Raise Doubts.
+        </p>
+        <div class="mt-4">
+            <a href="{% url 'trainer_batch_report' %}" class="inline-flex items-center gap-2 rounded-xl bg-primary-600 text-white px-4 py-2.5 text-sm font-semibold hover:bg-primary-700 transition-colors">
+                <i class="bi bi-file-earmark-bar-graph"></i> Generate Batch Report
+            </a>
+        </div>
+    </section>
+
+    <section class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">Course -> Module -> Batch Hierarchy</h3>
+        <div class="mt-4 space-y-4">
+            {% for row in trainer_hierarchy %}
+            <article class="rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                <h4 class="font-bold text-slate-900 dark:text-white">{{ row.course.title }}</h4>
+                <ul class="mt-2 text-sm text-slate-700 dark:text-slate-200 space-y-1">
+                    {% for module_row in row.module_rows %}
+                    <li><span class="font-semibold">{{ module_row.module_name }}</span> -> {{ module_row.batches|join:", " }}</li>
+                    {% endfor %}
+                </ul>
+            </article>
+            {% empty %}
+            <p class="text-sm text-slate-600 dark:text-slate-300">No enrollment hierarchy data available yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

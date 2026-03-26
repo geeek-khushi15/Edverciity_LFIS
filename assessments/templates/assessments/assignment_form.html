@@ -1,0 +1,23 @@
+{% extends 'accounts/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<section class="max-w-3xl mx-auto rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-6 shadow-card">
+    <div class="flex items-center justify-between gap-3 mb-5">
+        <div>
+            <h2 class="text-2xl font-extrabold text-slate-900 dark:text-white">{% if object %}Edit Assignment{% else %}Create Assignment{% endif %}</h2>
+            <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">Set assignment details and publishing timeline for students.</p>
+        </div>
+        <a href="{% url 'trainer_assignment_list' %}" class="text-sm font-semibold text-slate-600 hover:text-slate-900 dark:text-white">Back</a>
+    </div>
+
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <div class="flex justify-end gap-2 pt-2">
+            <a href="{% url 'trainer_assignment_list' %}" class="rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">Cancel</a>
+            <button type="submit" class="rounded-xl btn-gradient text-white px-4 py-2.5 text-sm font-semibold shadow-sm">Save Assignment</button>
+        </div>
+    </form>
+</section>
+{% endblock %}

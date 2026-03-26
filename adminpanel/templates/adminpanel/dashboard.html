@@ -1,0 +1,131 @@
+{% extends 'adminpanel/base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Stat grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+        <a href="{% url 'adminpanel_students' %}" class="stat-card hover:shadow-md transition group">
+            <div class="flex items-start justify-between">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Students</p>
+                <span class="h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)"><i class="bi bi-mortarboard-fill"></i></span>
+            </div>
+            <p class="text-3xl font-extrabold text-slate-800 mt-2">{{ total_students }}</p>
+        </a>
+        <a href="{% url 'adminpanel_trainers' %}" class="stat-card hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Trainers</p>
+                <span class="h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm" style="background:linear-gradient(135deg,#ec4899,#f43f5e)"><i class="bi bi-person-workspace"></i></span>
+            </div>
+            <p class="text-3xl font-extrabold text-slate-800 mt-2">{{ total_trainers }}</p>
+        </a>
+        <a href="{% url 'adminpanel_courses' %}" class="stat-card hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Courses</p>
+                <span class="h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm" style="background:linear-gradient(135deg,#0ea5e9,#2563eb)"><i class="bi bi-book-half"></i></span>
+            </div>
+            <p class="text-3xl font-extrabold text-slate-800 mt-2">{{ total_courses }}</p>
+        </a>
+        <a href="{% url 'adminpanel_modules' %}" class="stat-card hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Modules</p>
+                <span class="h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm" style="background:linear-gradient(135deg,#14b8a6,#0d9488)"><i class="bi bi-layers-half"></i></span>
+            </div>
+            <p class="text-3xl font-extrabold text-slate-800 mt-2">{{ total_modules }}</p>
+        </a>
+        <a href="{% url 'adminpanel_batches' %}" class="stat-card hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Batches</p>
+                <span class="h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm" style="background:linear-gradient(135deg,#f59e0b,#f97316)"><i class="bi bi-collection-fill"></i></span>
+            </div>
+            <p class="text-3xl font-extrabold text-slate-800 mt-2">{{ total_batches }}</p>
+        </a>
+        <a href="{% url 'adminpanel_enrollments' %}" class="stat-card hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Enrollments</p>
+                <span class="h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm" style="background:linear-gradient(135deg,#7c5cff,#9a6bff)"><i class="bi bi-person-check-fill"></i></span>
+            </div>
+            <p class="text-3xl font-extrabold text-slate-800 mt-2">{{ total_enrollments }}</p>
+        </a>
+        <a href="{% url 'adminpanel_doubts' %}?status=PENDING" class="stat-card hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Pending Doubts</p>
+                <span class="h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm" style="background:linear-gradient(135deg,#f59e0b,#d97706)"><i class="bi bi-question-diamond-fill"></i></span>
+            </div>
+            <p class="text-3xl font-extrabold {% if pending_doubts > 0 %}text-amber-600{% else %}text-slate-800{% endif %} mt-2">{{ pending_doubts }}</p>
+        </a>
+        <a href="{% url 'adminpanel_certificates' %}?status=PENDING" class="stat-card hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Cert Pending</p>
+                <span class="h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm" style="background:linear-gradient(135deg,#8b5cf6,#a78bfa)"><i class="bi bi-patch-check-fill"></i></span>
+            </div>
+            <p class="text-3xl font-extrabold {% if pending_certs > 0 %}text-violet-600{% else %}text-slate-800{% endif %} mt-2">{{ pending_certs }}</p>
+        </a>
+        <a href="{% url 'adminpanel_assignments' %}" class="stat-card hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Assignments</p>
+                <span class="h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm" style="background:linear-gradient(135deg,#10b981,#059669)"><i class="bi bi-clipboard-check-fill"></i></span>
+            </div>
+            <p class="text-3xl font-extrabold text-slate-800 mt-2">{{ total_assignments }}</p>
+        </a>
+        <a href="{% url 'adminpanel_tests' %}" class="stat-card hover:shadow-md transition">
+            <div class="flex items-start justify-between">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wide">Tests</p>
+                <span class="h-8 w-8 rounded-lg flex items-center justify-center text-white text-sm" style="background:linear-gradient(135deg,#ef4444,#dc2626)"><i class="bi bi-ui-checks-grid"></i></span>
+            </div>
+            <p class="text-3xl font-extrabold text-slate-800 mt-2">{{ total_tests }}</p>
+        </a>
+    </div>
+
+    <!-- Recent enrollments -->
+    <div class="card">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-slate-800">Recent Enrollments</h2>
+            <a href="{% url 'adminpanel_enrollments' %}" class="text-xs font-semibold text-indigo-600 hover:underline">View all →</a>
+        </div>
+        <div class="overflow-x-auto">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student</th><th>Course</th><th>Batch</th><th>Type</th><th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in recent_enrollments %}
+                    <tr>
+                        <td class="font-semibold">{{ e.student.username }}</td>
+                        <td>{{ e.course.title|default:"—" }}</td>
+                        <td>{{ e.batch.name }}</td>
+                        <td>
+                            {% if e.enrollment_type == 'FULL' %}
+                            <span class="badge badge-blue">Full</span>
+                            {% else %}
+                            <span class="badge badge-purple">Module</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-slate-400">{{ e.enrollment_date|date:"d M Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="5" class="text-center text-slate-400 py-4">No enrollments yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Quick links -->
+    <div class="card">
+        <h2 class="font-bold text-slate-800 mb-4">Quick Actions</h2>
+        <div class="flex flex-wrap gap-3">
+            <a href="{% url 'enrollment_create' %}" class="px-4 py-2 rounded-lg text-sm font-semibold text-white" style="background:#7c5cff"><i class="bi bi-person-plus-fill mr-1"></i> New Enrollment</a>
+            <a href="{% url 'adminpanel_doubts' %}?status=PENDING" class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-amber-500"><i class="bi bi-question-diamond-fill mr-1"></i> Pending Doubts</a>
+            <a href="{% url 'adminpanel_certificates' %}?status=PENDING" class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-violet-600"><i class="bi bi-patch-check-fill mr-1"></i> Cert Applications</a>
+            <a href="{% url 'adminpanel_reports' %}" class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-emerald-600"><i class="bi bi-bar-chart-fill mr-1"></i> Reports</a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

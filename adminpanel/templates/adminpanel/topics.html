@@ -1,0 +1,137 @@
+{% extends 'adminpanel/base.html' %}
+{% block title %}Topics{% endblock %}
+{% block page_title %}Topics{% endblock %}
+{% block nav_topics %}active{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-slate-800">All Topics <span class="text-slate-400 font-normal text-sm">({{ total_topics }})</span></h2>
+        <div class="flex gap-2">
+            <a href="{% url 'adminpanel_topics_import' %}" class="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-teal-600 hover:bg-teal-700 transition">
+                <i class="bi bi-cloud-upload mr-1"></i> Import Topics
+            </a>
+            <a href="{% url 'course_topics_admin' %}" class="px-4 py-2 rounded-lg text-sm font-semibold text-white" style="background:#7c5cff">
+                <i class="bi bi-plus-lg mr-1"></i> Manage Topics
+            </a>
+        </div>
+    </div>
+
+    <div class="space-y-3" id="topicCourseAccordion">
+        {% for group in courses_with_topics %}
+        <section class="rounded-xl border border-slate-200 overflow-hidden bg-white" data-accordion-item>
+            <button
+                type="button"
+                class="w-full px-4 py-3 flex items-center justify-between gap-3 text-left hover:bg-slate-50 transition-colors"
+                data-accordion-toggle
+                aria-expanded="false"
+            >
+                <div class="min-w-0">
+                    <p class="font-bold text-slate-800 truncate">{{ group.course.title }}</p>
+                    <p class="text-xs text-slate-500 mt-0.5">{{ group.topics|length }} topic{{ group.topics|length|pluralize }}</p>
+                </div>
+                <span class="h-8 w-8 rounded-full border border-slate-200 flex items-center justify-center text-slate-500 transition-transform duration-300" data-accordion-icon>
+                    <i class="bi bi-chevron-down"></i>
+                </span>
+            </button>
+
+            <div class="max-h-0 opacity-0 overflow-hidden transition-all duration-300 ease-in-out" data-accordion-content>
+                <div class="border-t border-slate-200 overflow-x-auto">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Topic #</th>
+                                <th>Title</th>
+                                <th>Module</th>
+                                <th>Created By</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in group.topics %}
+                            <tr>
+                                <td class="text-slate-400">{{ forloop.counter }}</td>
+                                <td>{{ t.topic_number }}</td>
+                                <td class="font-semibold text-slate-800">{{ t.title }}</td>
+                                <td>{{ t.module.name|default:"—" }}</td>
+                                <td>{{ t.created_by.username|default:"—" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        {% empty %}
+        <div class="text-center text-slate-400 py-6">No topics yet.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+(() => {
+    const accordionRoot = document.getElementById('topicCourseAccordion');
+    if (!accordionRoot) return;
+
+    const items = Array.from(accordionRoot.querySelectorAll('[data-accordion-item]'));
+
+    const openItem = (item) => {
+        const content = item.querySelector('[data-accordion-content]');
+        const icon = item.querySelector('[data-accordion-icon]');
+        const btn = item.querySelector('[data-accordion-toggle]');
+        if (!content || !icon || !btn) return;
+
+        content.classList.remove('max-h-0', 'opacity-0');
+        content.style.maxHeight = content.scrollHeight + 'px';
+        content.classList.add('opacity-100');
+        icon.classList.add('rotate-180');
+        btn.setAttribute('aria-expanded', 'true');
+    };
+
+    const closeItem = (item) => {
+        const content = item.querySelector('[data-accordion-content]');
+        const icon = item.querySelector('[data-accordion-icon]');
+        const btn = item.querySelector('[data-accordion-toggle]');
+        if (!content || !icon || !btn) return;
+
+        content.style.maxHeight = '0px';
+        content.classList.add('max-h-0', 'opacity-0');
+        content.classList.remove('opacity-100');
+        icon.classList.remove('rotate-180');
+        btn.setAttribute('aria-expanded', 'false');
+    };
+
+    items.forEach((item, index) => {
+        const btn = item.querySelector('[data-accordion-toggle]');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            const expanded = btn.getAttribute('aria-expanded') === 'true';
+            if (expanded) {
+                closeItem(item);
+                return;
+            }
+
+            openItem(item);
+        });
+
+        if (index === 0) {
+            openItem(item);
+        } else {
+            closeItem(item);
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        items.forEach((item) => {
+            const btn = item.querySelector('[data-accordion-toggle]');
+            const content = item.querySelector('[data-accordion-content]');
+            if (!btn || !content) return;
+            if (btn.getAttribute('aria-expanded') === 'true') {
+                content.style.maxHeight = content.scrollHeight + 'px';
+            }
+        });
+    });
+})();
+</script>
+{% endblock %}

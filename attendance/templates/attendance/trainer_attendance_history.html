@@ -1,0 +1,94 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="space-y-6 lg:space-y-8">
+    <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Attendance History</h2>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">Review all past attendance records by batch and student name.</p>
+        </div>
+        <a href="{% url 'trainer_attendance_mark' %}" class="inline-flex items-center gap-2 rounded-xl btn-gradient text-white px-4 py-2.5 text-sm font-semibold shadow-sm">
+            <i class="bi bi-plus-circle"></i> Mark Attendance
+        </a>
+    </section>
+
+    <section class="rounded-2xl bg-white border border-slate-200 p-5 shadow-card">
+        <div class="mb-4">
+            <h3 class="text-sm font-semibold text-slate-700">Filter (Optional)</h3>
+            <p class="text-xs text-slate-500 mt-1">Leave empty to see all attendance records. Use filters to narrow results by batch or student.</p>
+        </div>
+        <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Batch</label>
+                <select name="batch" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm">
+                    <option value="">All Batches</option>
+                    {% for batch in batches %}
+                    <option value="{{ batch.id }}" {% if selected_batch_id == batch.id|stringformat:'s' %}selected{% endif %}>{{ batch.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Student Name</label>
+                <input type="text" name="student" value="{{ selected_student }}" placeholder="Search by username or full name" class="w-full rounded-lg border border-slate-300 p-2.5 text-sm">
+            </div>
+            <div class="flex items-end gap-2">
+                <button type="submit" class="flex-1 rounded-xl bg-slate-900 text-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-700 transition-colors">Apply Filters</button>
+                {% if selected_batch_id or selected_student %}
+                <a href="{% url 'trainer_attendance_history' %}" class="flex-1 rounded-xl border border-slate-300 bg-white text-slate-700 px-4 py-2.5 text-sm font-semibold hover:bg-slate-50 transition-colors text-center">Clear</a>
+                {% endif %}
+            </div>
+        </form>
+    </section>
+
+    <section class="rounded-2xl bg-white border border-slate-200 p-5 shadow-card">
+        <div class="overflow-x-auto">
+            {% if records or missing_students %}
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-slate-600 border-b border-slate-200">
+                        <th class="py-3 pr-4">Student Name</th>
+                        <th class="py-3 pr-4">Course</th>
+                        <th class="py-3 pr-4">Batch</th>
+                        <th class="py-3 pr-4">Date</th>
+                        <th class="py-3 pr-4">Attendance Status</th>
+                        <th class="py-3">Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in records %}
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td class="py-3 pr-4 font-semibold text-slate-900">{{ row.student.get_full_name|default:row.student.username }}</td>
+                        <td class="py-3 pr-4 text-slate-700">{{ row.session.course.title|default:'-' }}</td>
+                        <td class="py-3 pr-4 text-slate-700">{{ row.session.batch.name|default:'-' }}</td>
+                        <td class="py-3 pr-4 text-slate-700">{{ row.session.session_date|date:"M d, Y" }}</td>
+                        <td class="py-3 pr-4">
+                            {% if row.status == 'PRESENT' %}
+                            <span class="text-xs px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Present</span>
+                            {% else %}
+                            <span class="text-xs px-2 py-1 rounded-full bg-rose-100 text-rose-700 font-semibold">Absent</span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 text-slate-700">-</td>
+                    </tr>
+                    {% endfor %}
+                    {% for student in missing_students %}
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td class="py-3 pr-4 font-semibold text-slate-900">{{ student.get_full_name|default:student.username }}</td>
+                        <td class="py-3 pr-4 text-slate-700">{{ selected_batch.course.title|default:'-' }}</td>
+                        <td class="py-3 pr-4 text-slate-700">{{ selected_batch.name|default:'-' }}</td>
+                        <td class="py-3 pr-4 text-slate-700">-</td>
+                        <td class="py-3 pr-4">
+                            <span class="text-xs px-2 py-1 rounded-full bg-amber-100 text-amber-700 font-semibold">Not Marked</span>
+                        </td>
+                        <td class="py-3 text-slate-700">No attendance saved yet</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-sm text-slate-600">No attendance history found for selected filters.</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

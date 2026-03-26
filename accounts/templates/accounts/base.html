@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Flow Insights</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <script>
+        (() => {
+            const savedTheme = localStorage.getItem('lfi-theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.classList.add('dark');
+            }
+        })();
+
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+                        display: ['Sora', 'Inter', 'ui-sans-serif', 'system-ui'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#5f5cf0',
+                            600: '#7c5cff',
+                            700: '#9a6bff',
+                        },
+                        success: '#16a34a',
+                        warning: '#ea580c',
+                        danger: '#dc2626',
+                    },
+                    boxShadow: {
+                        card: '0 10px 35px -20px rgba(15, 23, 42, 0.45)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .page-bg {
+            background:
+                radial-gradient(40rem 20rem at -10% -10%, rgba(129, 140, 248, 0.28), transparent 60%),
+                radial-gradient(35rem 22rem at 110% 0%, rgba(244, 114, 182, 0.2), transparent 62%),
+                #f8fafc;
+        }
+
+        html.dark .page-bg {
+            background:
+                radial-gradient(40rem 20rem at -10% -10%, rgba(95, 92, 240, 0.22), transparent 60%),
+                radial-gradient(35rem 22rem at 110% 0%, rgba(154, 107, 255, 0.18), transparent 62%),
+                #0f172a;
+            color: #e2e8f0;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+            border-radius: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(8px);
+            color: #0f172a;
+            font-size: 0.95rem;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        html.dark input,
+        html.dark select,
+        html.dark textarea {
+            background: rgba(30, 41, 59, 0.75);
+            border-color: rgba(148, 163, 184, 0.28);
+            color: #e2e8f0;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #5f5cf0;
+            box-shadow: 0 0 0 3px rgba(95, 92, 240, 0.2);
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.65rem 0.8rem;
+            border-radius: 0.75rem;
+            color: #475569;
+            font-weight: 600;
+            transition: all 0.24s ease;
+        }
+
+        html.dark .nav-link {
+            color: #cbd5e1;
+        }
+
+        .nav-link:hover {
+            background: linear-gradient(120deg, rgba(79, 70, 229, 0.12), rgba(217, 70, 239, 0.12));
+            color: #312e81;
+            box-shadow: 0 12px 30px -24px rgba(79, 70, 229, 0.95);
+        }
+
+        html.dark .nav-link:hover {
+            color: #f8fafc;
+            background: linear-gradient(120deg, rgba(95, 92, 240, 0.22), rgba(154, 107, 255, 0.2));
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, #5f5cf0, #7c5cff, #9a6bff);
+            color: #ffffff;
+            box-shadow: 0 18px 30px -22px rgba(95, 92, 240, 0.95);
+        }
+
+        .hover-lift {
+            transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+        }
+
+        .hover-lift:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 24px 45px -30px rgba(79, 70, 229, 0.55);
+            border-color: rgba(129, 140, 248, 0.5);
+        }
+
+        .page-fade {
+            animation: pageFadeIn 0.35s ease;
+        }
+
+        @keyframes pageFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .skeleton {
+            position: relative;
+            overflow: hidden;
+            background: #e2e8f0;
+            border-radius: 0.5rem;
+        }
+
+        .skeleton::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            transform: translateX(-100%);
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+            animation: shimmer 1.4s infinite;
+        }
+
+        @keyframes shimmer {
+            100% { transform: translateX(100%); }
+        }
+
+        .btn-gradient {
+            background-image: linear-gradient(135deg, #5f5cf0, #7c5cff, #9a6bff);
+            box-shadow: 0 12px 30px -18px rgba(95, 92, 240, 0.75);
+        }
+
+        .btn-gradient:hover {
+            filter: brightness(1.02);
+            box-shadow: 0 18px 34px -16px rgba(95, 92, 240, 0.85);
+        }
+
+        .neo-btn {
+            border-radius: 0.9rem;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(226, 232, 240, 0.74));
+            box-shadow: 9px 9px 18px rgba(148, 163, 184, 0.22), -9px -9px 18px rgba(255, 255, 255, 0.86);
+            color: #334155;
+            border: 1px solid rgba(148, 163, 184, 0.28);
+        }
+
+        html.dark .neo-btn {
+            background: linear-gradient(145deg, rgba(51, 65, 85, 0.92), rgba(30, 41, 59, 0.92));
+            box-shadow: 8px 8px 18px rgba(2, 6, 23, 0.45), -6px -6px 14px rgba(51, 65, 85, 0.2);
+            color: #f8fafc;
+            border-color: rgba(148, 163, 184, 0.35);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.66);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.24);
+        }
+
+        .shadow-card {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.22);
+        }
+
+        html.dark .shadow-card,
+        html.dark .glass-card {
+            background: rgba(15, 23, 42, 0.65) !important;
+            border-color: rgba(148, 163, 184, 0.24) !important;
+            color: #e2e8f0;
+        }
+
+        html.dark #sidebar,
+        html.dark header,
+        html.dark #avatarMenu {
+            background: rgba(15, 23, 42, 0.74) !important;
+            border-color: rgba(148, 163, 184, 0.2) !important;
+            color: #e2e8f0;
+        }
+
+        html.dark .text-slate-900 { color: #f8fafc !important; }
+        html.dark .text-slate-800 { color: #e2e8f0 !important; }
+        html.dark .text-slate-700 { color: #cbd5e1 !important; }
+        html.dark .text-slate-600 { color: #cbd5e1 !important; }
+        html.dark .text-slate-500 { color: #94a3b8 !important; }
+        html.dark .text-gray-900 { color: #f8fafc !important; }
+        html.dark .text-gray-800 { color: #e2e8f0 !important; }
+        html.dark .text-gray-700 { color: #cbd5e1 !important; }
+        html.dark .text-gray-600 { color: #cbd5e1 !important; }
+        html.dark .text-gray-500 { color: #94a3b8 !important; }
+        html.dark .bg-white { background: rgba(15, 23, 42, 0.62) !important; }
+        html.dark .bg-slate-50 { background: rgba(30, 41, 59, 0.66) !important; }
+        html.dark .bg-gray-50 { background: rgba(30, 41, 59, 0.66) !important; }
+        html.dark .bg-gray-100 { background: rgba(30, 41, 59, 0.78) !important; }
+        html.dark .border-slate-200,
+        html.dark .border-slate-100,
+        html.dark .border-gray-300,
+        html.dark .border-gray-200,
+        html.dark .border-gray-100,
+        html.dark .border-white\/30,
+        html.dark .border-white\/70 {
+            border-color: rgba(148, 163, 184, 0.24) !important;
+        }
+
+        html.dark .bg-amber-100,
+        html.dark .bg-yellow-100 { background: rgba(245, 158, 11, 0.2) !important; }
+        html.dark .text-amber-800,
+        html.dark .text-amber-700,
+        html.dark .text-yellow-800,
+        html.dark .text-yellow-700 { color: #fcd34d !important; }
+        html.dark .border-amber-200,
+        html.dark .border-yellow-200 { border-color: rgba(245, 158, 11, 0.4) !important; }
+
+        html.dark .bg-emerald-100,
+        html.dark .bg-green-100 { background: rgba(16, 185, 129, 0.2) !important; }
+        html.dark .text-emerald-800,
+        html.dark .text-emerald-700,
+        html.dark .text-green-800,
+        html.dark .text-green-700 { color: #6ee7b7 !important; }
+        html.dark .border-emerald-200,
+        html.dark .border-green-200 { border-color: rgba(16, 185, 129, 0.4) !important; }
+
+        html.dark .bg-rose-100,
+        html.dark .bg-red-100 { background: rgba(244, 63, 94, 0.2) !important; }
+        html.dark .text-rose-800,
+        html.dark .text-rose-700,
+        html.dark .text-red-800,
+        html.dark .text-red-700 { color: #fda4af !important; }
+        html.dark .border-rose-200,
+        html.dark .border-red-200 { border-color: rgba(244, 63, 94, 0.4) !important; }
+
+        html.dark .bg-amber-50,
+        html.dark .bg-yellow-50,
+        html.dark .bg-emerald-50,
+        html.dark .bg-green-50,
+        html.dark .bg-rose-50,
+        html.dark .bg-red-50 {
+            background: rgba(30, 41, 59, 0.8) !important;
+        }
+
+        html.dark .bg-indigo-600 { background-color: rgb(99 102 241) !important; }
+        html.dark .hover\:bg-indigo-700:hover { background-color: rgb(79 70 229) !important; }
+
+        .gradient-border {
+            position: relative;
+        }
+
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.45), rgba(168, 85, 247, 0.34), rgba(236, 72, 153, 0.38));
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .dropdown-panel {
+            opacity: 0;
+            transform: translateY(-8px);
+            pointer-events: none;
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .dropdown-panel.open {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .brand-wordmark {
+            font-family: 'Sora', 'Inter', sans-serif;
+            letter-spacing: 0.01em;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="font-sans text-slate-800 page-bg min-h-screen">
+    <div class="min-h-screen flex">
+        {% if user.is_authenticated %}
+        <div id="mobileBackdrop" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-30 lg:hidden"></div>
+
+        <aside id="sidebar" class="fixed z-40 inset-y-0 left-0 w-72 bg-white/95 border-r border-slate-200 shadow-xl transform -translate-x-full transition-transform duration-300 lg:translate-x-0 lg:static lg:h-[calc(100vh-2rem)] lg:m-4 lg:rounded-3xl lg:border lg:shadow-2xl glass-card gradient-border overflow-hidden">
+            <div class="h-full flex flex-col">
+                <div class="px-6 py-5 border-b border-slate-200">
+                    <a href="{% url 'dashboard' %}" class="flex items-center gap-3">
+                        <span class="h-10 w-10 rounded-xl bg-primary-600 text-white flex items-center justify-center text-lg font-bold">LF</span>
+                        <div>
+                            <h1 class="brand-wordmark text-lg font-extrabold text-slate-900 dark:text-white leading-tight">Learning Flow Insights</h1>
+                        </div>
+                    </a>
+                </div>
+
+                <nav class="px-4 py-5 space-y-1 overflow-y-auto">
+                    <a href="{% url 'dashboard' %}" class="nav-link {% if '/accounts/dashboard/' in request.path %}active{% endif %}">
+                        <i class="bi bi-grid-1x2-fill"></i> Dashboard
+                    </a>
+
+                    {% if user.role == 'STUDENT' %}
+                    <a href="{% url 'student_profile' %}" class="nav-link {% if request.path == '/accounts/profile/' %}active{% endif %}">
+                        <i class="bi bi-person-badge"></i> My Profile
+                    </a>
+                    <a href="{% url 'student_progress' %}" class="nav-link {% if '/accounts/progress/' in request.path %}active{% endif %}">
+                        <i class="bi bi-bar-chart-line"></i> Check Progress
+                    </a>
+                    <a href="{% url 'enrollment_list' %}" class="nav-link {% if '/enrollments/' in request.path %}active{% endif %}">
+                        <i class="bi bi-book-half"></i> Courses
+                    </a>
+                    <a href="{% url 'student_test_list' %}" class="nav-link {% if '/tests/' in request.path or '/test/' in request.path %}active{% endif %}">
+                        <i class="bi bi-ui-checks-grid"></i> Tests
+                    </a>
+                    <a href="{% url 'student_assignment_list' %}" class="nav-link {% if '/student/assignments/' in request.path %}active{% endif %}">
+                        <i class="bi bi-clipboard-check"></i> Assignments
+                    </a>
+                    <a href="{% url 'student_attendance' %}" class="nav-link {% if '/student/attendance/' in request.path %}active{% endif %}">
+                        <i class="bi bi-calendar2-check"></i> Attendance
+                    </a>
+                    <a href="{% url 'student_certification_list' %}" class="nav-link {% if '/certifications/' in request.path %}active{% endif %}">
+                        <i class="bi bi-patch-check"></i> Certificates
+                    </a>
+                    <a href="{% url 'topic_acknowledgement' %}" class="nav-link {% if '/student/topic-acknowledgement/' in request.path %}active{% endif %}">
+                        <i class="bi bi-journal-check"></i> Acknowledge Syllabus
+                    </a>
+                    <a href="{% url 'student_raise_doubt' %}" class="nav-link {% if '/accounts/doubts/raise/' in request.path %}active{% endif %}">
+                        <i class="bi bi-question-diamond"></i> Raise Doubts
+                    </a>
+                    {% elif user.role == 'TRAINER' %}
+                    <a href="{% url 'trainer_profile' %}" class="nav-link {% if '/accounts/trainer/profile/' in request.path %}active{% endif %}">
+                        <i class="bi bi-person-badge"></i> My Profile
+                    </a>
+                    <a href="{% url 'course_list' %}" class="nav-link {% if '/courses/' in request.path %}active{% endif %}">
+                        <i class="bi bi-book-half"></i> Courses
+                    </a>
+                    <a href="{% url 'trainer_test_list' %}" class="nav-link {% if '/trainer/tests/' in request.path or '/test/' in request.path %}active{% endif %}">
+                        <i class="bi bi-ui-checks-grid"></i> Tests
+                    </a>
+                    <a href="{% url 'trainer_assignment_list' %}" class="nav-link {% if '/trainer/assignments/' in request.path %}active{% endif %}">
+                        <i class="bi bi-clipboard-check"></i> Assignments
+                    </a>
+                    <a href="{% url 'trainer_attendance_mark' %}" class="nav-link {% if '/trainer/attendance/mark/' in request.path %}active{% endif %}">
+                        <i class="bi bi-calendar2-check"></i> Mark Attendance
+                    </a>
+                    <a href="{% url 'trainer_attendance_history' %}" class="nav-link {% if '/trainer/attendance/history/' in request.path %}active{% endif %}">
+                        <i class="bi bi-clock-history"></i> Attendance History
+                    </a>
+                    <a href="{% url 'student_performance_list' %}" class="nav-link {% if '/recommend' in request.path %}active{% endif %}">
+                        <i class="bi bi-award"></i> Certificates
+                    </a>
+                    <a href="{% url 'trainer_topic_progress' %}" class="nav-link {% if '/trainer/topic-progress/' in request.path %}active{% endif %}">
+                        <i class="bi bi-journal-check"></i> Topic Progress
+                    </a>
+                    <a href="{% url 'trainer_batch_report' %}" class="nav-link {% if '/accounts/trainer/batch-report/' in request.path %}active{% endif %}">
+                        <i class="bi bi-file-earmark-bar-graph"></i> Batch Reports
+                    </a>
+                    <a href="{% url 'trainer_doubts' %}" class="nav-link {% if '/accounts/trainer/doubts/' in request.path %}active{% endif %}">
+                        <i class="bi bi-question-diamond"></i> Raise Doubts
+                    </a>
+                    <a href="#" class="nav-link">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+                    {% else %}
+                    <a href="{% url 'course_list' %}" class="nav-link"><i class="bi bi-book-half"></i> Courses</a>
+                    <a href="{% url 'course_topics_admin' %}" class="nav-link {% if '/admin/course-topics/' in request.path %}active{% endif %}"><i class="bi bi-list-check"></i> Course Topics</a>
+                    <a href="{% url 'admin_application_list' %}" class="nav-link"><i class="bi bi-award"></i> Certificates</a>
+                    <a href="{% url 'admin_doubts' %}" class="nav-link {% if '/accounts/admin/doubts/' in request.path %}active{% endif %}"><i class="bi bi-question-diamond"></i> Student Doubts</a>
+                    <a href="{% url 'batch_list' %}" class="nav-link"><i class="bi bi-people"></i> Batches</a>
+                    <a href="#" class="nav-link"><i class="bi bi-gear"></i> Settings</a>
+                    <a href="/admin/" class="nav-link"><i class="bi bi-shield-lock"></i> Admin Panel</a>
+                    {% endif %}
+                </nav>
+
+                <div class="mt-auto p-4 border-t border-slate-200">
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full inline-flex justify-center items-center gap-2 rounded-xl neo-btn py-2.5 text-sm font-semibold hover:scale-[1.01] transition-all">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+
+        {% endif %}
+
+        <div class="flex-1 lg:ml-0 min-w-0 {% if not user.is_authenticated %}flex items-center justify-center px-4 py-12{% else %}lg:pr-4{% endif %}">
+            {% if user.is_authenticated %}
+            <header class="sticky top-4 z-20 rounded-2xl border border-white/30 bg-white/65 backdrop-blur-md shadow-card gradient-border">
+                <div class="px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <button id="openSidebar" class="lg:hidden h-10 w-10 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100" type="button">
+                            <i class="bi bi-list text-xl"></i>
+                        </button>
+                        <div>
+                            <p class="brand-wordmark text-base sm:text-lg text-slate-900 dark:text-white font-bold">Learning Flow Insights</p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button class="h-10 w-10 rounded-full border border-slate-200 text-slate-600 hover:bg-slate-100" type="button" aria-label="Notifications">
+                            <i class="bi bi-bell"></i>
+                        </button>
+                        <button id="themeToggle" class="h-10 w-10 rounded-full border border-slate-200 text-slate-600 hover:bg-slate-100" type="button" aria-label="Toggle dark mode">
+                            <i id="themeToggleIcon" class="bi bi-moon-stars"></i>
+                        </button>
+                        <div class="relative">
+                            <button id="avatarMenuBtn" type="button" class="h-10 w-10 rounded-full bg-primary-600 text-white flex items-center justify-center font-bold shadow-sm">
+                                {{ user.first_name|default:user.username|slice:":1"|upper }}
+                            </button>
+                            <div id="avatarMenu" class="dropdown-panel absolute right-0 mt-2 w-52 rounded-xl border border-slate-200 bg-white shadow-lg p-2">
+                                <div class="px-3 py-2 border-b border-slate-100 mb-1">
+                                    <p class="text-sm font-semibold text-slate-900 dark:text-white">{{ user.username }}</p>
+                                    <p class="text-xs text-slate-600 dark:text-slate-300">{{ user.get_role_display }}</p>
+                                </div>
+                                {% if user.role == 'STUDENT' %}
+                                <a href="{% url 'student_profile' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100"><i class="bi bi-person"></i> Profile</a>
+                                {% elif user.role == 'TRAINER' %}
+                                <a href="{% url 'trainer_profile' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100"><i class="bi bi-person"></i> Profile</a>
+                                {% else %}
+                                <a href="{% url 'dashboard' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100"><i class="bi bi-person"></i> Profile</a>
+                                {% endif %}
+                                {% if user.role != 'STUDENT' %}
+                                <a href="#" class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-slate-100"><i class="bi bi-gear"></i> Settings</a>
+                                {% endif %}
+                                <form action="{% url 'logout' %}" method="post" class="mt-1">
+                                    {% csrf_token %}
+                                    <button type="submit" class="w-full text-left flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-rose-600 hover:bg-rose-50"><i class="bi bi-box-arrow-right"></i> Logout</button>
+                                </form>
+                            </div>
+                        </div>
+                        <form action="{% url 'logout' %}" method="post" class="hidden sm:block">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-gradient text-white text-sm font-semibold px-3.5 py-2 rounded-lg shadow-sm transition-all">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </header>
+            {% endif %}
+
+            <main class="page-fade {% if user.is_authenticated %}px-4 sm:px-6 lg:px-8 py-6 lg:py-8{% else %}{% block unauth_main_class %}w-full max-w-xl bg-white/90 backdrop-blur rounded-3xl shadow-card border border-slate-200 p-8{% endblock %}{% endif %}">
+                {% if not user.is_authenticated %}
+                {% block unauth_intro %}
+                <div class="text-center mb-6">
+                    <h1 class="text-2xl font-extrabold text-slate-900 dark:text-white">Learning Flow Insights</h1>
+                    <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">SaaS-style training and LMS dashboard</p>
+                </div>
+                {% endblock %}
+                {% endif %}
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const openSidebarBtn = document.getElementById('openSidebar');
+        const backdrop = document.getElementById('mobileBackdrop');
+
+        if (openSidebarBtn && sidebar && backdrop) {
+            openSidebarBtn.addEventListener('click', () => {
+                sidebar.classList.remove('-translate-x-full');
+                backdrop.classList.remove('hidden');
+            });
+
+            backdrop.addEventListener('click', () => {
+                sidebar.classList.add('-translate-x-full');
+                backdrop.classList.add('hidden');
+            });
+        }
+
+        const avatarMenuBtn = document.getElementById('avatarMenuBtn');
+        const avatarMenu = document.getElementById('avatarMenu');
+
+        if (avatarMenuBtn && avatarMenu) {
+            avatarMenuBtn.addEventListener('click', () => {
+                avatarMenu.classList.toggle('open');
+            });
+
+            document.addEventListener('click', (event) => {
+                if (!avatarMenu.contains(event.target) && !avatarMenuBtn.contains(event.target)) {
+                    avatarMenu.classList.remove('open');
+                }
+            });
+        }
+
+        const themeToggle = document.getElementById('themeToggle');
+        const themeToggleIcon = document.getElementById('themeToggleIcon');
+
+        const updateThemeIcon = () => {
+            if (!themeToggleIcon) return;
+            const isDark = document.documentElement.classList.contains('dark');
+            themeToggleIcon.className = isDark ? 'bi bi-sun' : 'bi bi-moon-stars';
+        };
+
+        if (themeToggle) {
+            updateThemeIcon();
+            themeToggle.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                const isDark = document.documentElement.classList.contains('dark');
+                localStorage.setItem('lfi-theme', isDark ? 'dark' : 'light');
+                updateThemeIcon();
+            });
+        }
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,46 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="space-y-6 lg:space-y-8">
+    <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">{{ test.title }}</h2>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">Batch: {{ test.batch.name }}</p>
+        </div>
+        <div class="flex items-center gap-2">
+            <a href="{% url 'question_create' test_id=test.id %}" class="inline-flex items-center gap-2 rounded-xl btn-gradient text-white px-4 py-2.5 text-sm font-semibold shadow-sm"><i class="bi bi-plus-circle"></i> Add Question</a>
+            <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">Dashboard</a>
+        </div>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+            <p class="text-sm text-slate-600 dark:text-slate-300">Passing Marks</p>
+            <h3 class="text-3xl font-extrabold mt-2 text-warning">{{ test.passing_marks }}</h3>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+            <p class="text-sm text-slate-600 dark:text-slate-300">Total Questions</p>
+            <h3 class="text-3xl font-extrabold mt-2 text-primary-600">{{ questions.count }}</h3>
+        </article>
+    </section>
+
+    <section class="space-y-4">
+        <h3 class="text-base font-bold text-slate-900 dark:text-white">Questions</h3>
+        {% for q in questions %}
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <h4 class="font-bold text-slate-900 dark:text-white">Q{{ forloop.counter }}. {{ q.text }}</h4>
+            <ul class="mt-4 space-y-2 text-sm">
+                <li class="rounded-lg px-3 py-2 border {% if q.correct_option == 1 %}border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 font-semibold{% else %}border-slate-200 text-slate-700{% endif %}">1. {{ q.option1 }}</li>
+                <li class="rounded-lg px-3 py-2 border {% if q.correct_option == 2 %}border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 font-semibold{% else %}border-slate-200 text-slate-700{% endif %}">2. {{ q.option2 }}</li>
+                <li class="rounded-lg px-3 py-2 border {% if q.correct_option == 3 %}border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 font-semibold{% else %}border-slate-200 text-slate-700{% endif %}">3. {{ q.option3 }}</li>
+                <li class="rounded-lg px-3 py-2 border {% if q.correct_option == 4 %}border-emerald-200 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 font-semibold{% else %}border-slate-200 text-slate-700{% endif %}">4. {{ q.option4 }}</li>
+            </ul>
+        </article>
+        {% empty %}
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-6 shadow-card">
+            <p class="text-sm text-slate-600 dark:text-slate-300">No questions added yet.</p>
+        </article>
+        {% endfor %}
+    </section>
+</div>
+{% endblock %}

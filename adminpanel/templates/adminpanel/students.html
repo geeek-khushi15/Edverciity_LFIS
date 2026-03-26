@@ -1,0 +1,47 @@
+{% extends 'adminpanel/base.html' %}
+{% block title %}Students{% endblock %}
+{% block page_title %}Students{% endblock %}
+{% block nav_students %}active{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <h2 class="font-bold text-slate-800">All Students <span class="text-slate-400 font-normal text-sm">({{ students.count }})</span></h2>
+        <div class="flex gap-2">
+            <form method="get" class="flex gap-2">
+                <input type="text" name="q" value="{{ q }}" placeholder="Search username, email…" class="search-input">
+                <button type="submit" class="px-4 py-2 rounded-lg text-sm font-semibold text-white" style="background:#7c5cff">Search</button>
+                {% if q %}<a href="?" class="px-4 py-2 rounded-lg text-sm font-semibold bg-slate-100 text-slate-600">Clear</a>{% endif %}
+            </form>
+            <a href="{% url 'adminpanel_student_create' %}" class="px-4 py-2 rounded-lg text-sm font-semibold text-white whitespace-nowrap" style="background:#0f766e">
+                <i class="bi bi-person-plus-fill mr-1"></i> New Student Profile
+            </a>
+        </div>
+    </div>
+    <div class="overflow-x-auto">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th><th>Username</th><th>Full Name</th><th>Email</th>
+                    <th>Enrollments</th><th>Test Attempts</th><th>Joined</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                <tr>
+                    <td class="text-slate-400">{{ forloop.counter }}</td>
+                    <td class="font-semibold text-indigo-700">{{ s.username }}</td>
+                    <td>{{ s.get_full_name|default:"—" }}</td>
+                    <td>{{ s.email }}</td>
+                    <td><span class="badge badge-blue">{{ s.enrollment_count }}</span></td>
+                    <td><span class="badge badge-purple">{{ s.attempt_count }}</span></td>
+                    <td class="text-slate-400">{{ s.date_joined|date:"d M Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-slate-400 py-6">No students found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

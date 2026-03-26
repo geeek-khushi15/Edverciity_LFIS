@@ -1,0 +1,54 @@
+{% extends 'adminpanel/base.html' %}
+{% block title %}Doubts{% endblock %}
+{% block page_title %}Student Doubts{% endblock %}
+{% block nav_doubts %}active{% endblock %}
+
+{% block content %}
+<div class="card">
+    <!-- Status tabs -->
+    <div class="flex items-center gap-3 mb-5">
+        <a href="?" class="px-4 py-1.5 rounded-full text-sm font-semibold transition
+            {% if not status_filter %}text-white{% else %}text-slate-500 bg-slate-100 hover:bg-slate-200{% endif %}"
+           {% if not status_filter %}style="background:#7c5cff"{% endif %}>
+            All ({{ counts.ALL }})
+        </a>
+        <a href="?status=PENDING" class="px-4 py-1.5 rounded-full text-sm font-semibold transition
+            {% if status_filter == 'PENDING' %}text-white bg-amber-500{% else %}text-amber-700 bg-amber-100 hover:bg-amber-200{% endif %}">
+            Pending ({{ counts.PENDING }})
+        </a>
+        <a href="?status=RESOLVED" class="px-4 py-1.5 rounded-full text-sm font-semibold transition
+            {% if status_filter == 'RESOLVED' %}text-white bg-emerald-600{% else %}text-emerald-700 bg-emerald-100 hover:bg-emerald-200{% endif %}">
+            Resolved ({{ counts.RESOLVED }})
+        </a>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table>
+            <thead>
+                <tr><th>#</th><th>Student</th><th>Trainer</th><th>Title</th><th>Status</th><th>Raised</th><th>Resolved</th></tr>
+            </thead>
+            <tbody>
+                {% for d in doubts %}
+                <tr>
+                    <td class="text-slate-400">{{ forloop.counter }}</td>
+                    <td class="font-semibold text-indigo-700">{{ d.student.username }}</td>
+                    <td>{{ d.trainer.username|default:"—" }}</td>
+                    <td class="font-medium">{{ d.title }}</td>
+                    <td>
+                        {% if d.status == 'PENDING' %}
+                        <span class="badge badge-yellow">Pending</span>
+                        {% else %}
+                        <span class="badge badge-green">Resolved</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-slate-400">{{ d.created_at|date:"d M Y" }}</td>
+                    <td class="text-slate-400">{{ d.resolved_at|date:"d M Y"|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-slate-400 py-6">No doubts found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends 'adminpanel/base.html' %}
+{% block title %}Courses{% endblock %}
+{% block page_title %}Courses{% endblock %}
+{% block nav_courses %}active{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-slate-800">All Courses <span class="text-slate-400 font-normal text-sm">({{ courses.count }})</span></h2>
+        <a href="{% url 'course_create' %}" class="px-4 py-2 rounded-lg text-sm font-semibold text-white" style="background:#7c5cff">
+            <i class="bi bi-plus-lg mr-1"></i> New Course
+        </a>
+    </div>
+    <div class="overflow-x-auto">
+        <table>
+            <thead>
+                <tr><th>#</th><th>Title</th><th>Duration (hrs)</th><th>Modules</th><th>Topics</th><th>Batches</th><th>Enrollments</th></tr>
+            </thead>
+            <tbody>
+                {% for c in courses %}
+                <tr>
+                    <td class="text-slate-400">{{ forloop.counter }}</td>
+                    <td class="font-semibold text-slate-800">{{ c.title }}</td>
+                    <td>{{ c.duration }}</td>
+                    <td><span class="badge badge-purple">{{ c.module_count }}</span></td>
+                    <td><span class="badge badge-yellow">{{ c.topic_count }}</span></td>
+                    <td><span class="badge badge-blue">{{ c.batch_count }}</span></td>
+                    <td><span class="badge badge-green">{{ c.enrollment_count }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-slate-400 py-6">No courses yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="space-y-6 lg:space-y-8">
+    <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">My Attendance</h2>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">Read-only attendance history and overall attendance percentage.</p>
+        </div>
+    </section>
+
+    <section class="rounded-2xl bg-white border border-slate-200 p-5 shadow-card">
+        <div class="flex items-center justify-between gap-3">
+            <div>
+                <p class="text-sm text-slate-600">Overall Attendance</p>
+                <h3 class="text-3xl font-extrabold text-slate-900 mt-1">{{ attendance_percentage }}%</h3>
+                <p class="text-xs text-slate-500 mt-1">Present {{ present_classes }} / {{ total_classes }} classes</p>
+            </div>
+            <div class="w-full max-w-sm">
+                <div class="h-3 rounded-full bg-slate-200 overflow-hidden">
+                    <div class="h-3 rounded-full {% if attendance_percentage >= 75 %}bg-emerald-500{% elif attendance_percentage >= 50 %}bg-amber-500{% else %}bg-rose-500{% endif %}" style="width: {{ attendance_percentage }}%"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="rounded-2xl bg-white border border-slate-200 p-5 shadow-card">
+        <h3 class="text-base font-bold text-slate-900">Attendance by Course</h3>
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+            {% for course in course_summary %}
+            <article class="rounded-xl border border-slate-200 p-4">
+                <p class="font-semibold text-slate-900">{{ course.session__course__title|default:'Unassigned Course' }}</p>
+                <p class="text-sm text-slate-600 mt-1">{{ course.present_classes }}/{{ course.total_classes }} Present</p>
+                <div class="mt-3 h-2 rounded-full bg-slate-200 overflow-hidden">
+                    <div class="h-2 rounded-full bg-primary-600" style="width: {{ course.percentage }}%"></div>
+                </div>
+                <p class="text-xs text-slate-500 mt-2">{{ course.percentage }}%</p>
+            </article>
+            {% empty %}
+            <p class="text-sm text-slate-600">No attendance summary available yet.</p>
+            {% endfor %}
+        </div>
+    </section>
+
+    <section class="rounded-2xl bg-white border border-slate-200 p-5 shadow-card">
+        <h3 class="text-base font-bold text-slate-900 mb-3">Attendance History (All Records)</h3>
+        <p class="text-sm text-slate-600 mb-4">Complete attendance record for all your enrolled courses. Updated automatically when trainers mark attendance.</p>
+        <div class="mt-4 overflow-x-auto">
+            {% if records %}
+            <div class="text-xs text-slate-500 mb-3">Showing {{ records|length }} attendance record(s)</div>
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="text-left text-slate-600 border-b border-slate-200 bg-slate-50">
+                        <th class="py-3 px-4">Date</th>
+                        <th class="py-3 px-4">Course</th>
+                        <th class="py-3 px-4">Batch</th>
+                        <th class="py-3 px-4">Trainer</th>
+                        <th class="py-3 px-4">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in records %}
+                    <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-4 text-slate-700">{{ row.session.session_date|date:"M d, Y" }}</td>
+                        <td class="py-3 px-4 text-slate-700">{{ row.session.course.title|default:'-' }}</td>
+                        <td class="py-3 px-4 text-slate-700">{{ row.session.batch.name|default:'-' }}</td>
+                        <td class="py-3 px-4 text-slate-700">{{ row.session.trainer.get_full_name|default:row.session.trainer.username|default:'-' }}</td>
+                        <td class="py-3 px-4">
+                            {% if row.status == 'PRESENT' %}
+                            <span class="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-2.5 py-1 text-xs font-semibold">Present</span>
+                            {% elif row.status == 'ABSENT' %}
+                            <span class="inline-flex items-center rounded-full bg-rose-100 text-rose-700 px-2.5 py-1 text-xs font-semibold">Absent</span>
+                            {% else %}
+                            <span class="inline-flex items-center rounded-full bg-slate-100 text-slate-700 px-2.5 py-1 text-xs font-semibold">-</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-sm text-slate-600">No attendance records available yet. Check back after your trainer marks attendance.</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

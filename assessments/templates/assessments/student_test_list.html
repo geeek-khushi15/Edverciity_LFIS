@@ -1,0 +1,85 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="space-y-6 lg:space-y-8">
+    <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Tests Dashboard</h2>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">Attempt tests, track scores, and review completion status.</p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </section>
+
+    <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <p class="text-sm text-slate-600 dark:text-slate-300">Available Tests</p>
+            <h3 class="text-3xl font-extrabold mt-2 text-primary-600">{{ tests|length }}</h3>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <p class="text-sm text-slate-600 dark:text-slate-300">Completed Tests</p>
+            <h3 class="text-3xl font-extrabold mt-2 text-success">{{ completed_attempts|length }}</h3>
+        </article>
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+            <p class="text-sm text-slate-600 dark:text-slate-300">Average Score</p>
+            <h3 class="text-3xl font-extrabold mt-2 text-warning">{{ avg_score }}</h3>
+        </article>
+    </section>
+
+    <section class="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
+        <div class="xl:col-span-2 space-y-4">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Available Tests</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {% for test in tests %}
+                <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+                    <div class="flex items-start justify-between gap-2">
+                        <div>
+                            <h4 class="font-bold text-slate-900 dark:text-white">{{ test.title }}</h4>
+                            <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ test.batch.name }}</p>
+                        </div>
+                        <span class="text-xs font-semibold px-2 py-1 rounded-full bg-slate-100 text-slate-700">{{ test.questions.count }} marks</span>
+                    </div>
+
+                    <div class="mt-4 text-sm text-slate-600 space-y-1">
+                        <p><span class="text-slate-600 dark:text-slate-300">Duration:</span> 30 min</p>
+                        <p><span class="text-slate-600 dark:text-slate-300">Passing Marks:</span> {{ test.passing_marks }}</p>
+                    </div>
+
+                    <div class="mt-5">
+                        {% if test.id in attempted_test_ids %}
+                        <button class="w-full rounded-xl bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-300 font-semibold py-2.5 border border-slate-200" disabled>Attempted</button>
+                        {% elif test.questions.count > 0 %}
+                        <a href="{% url 'test_attempt' test_id=test.id %}" class="w-full inline-flex items-center justify-center rounded-xl btn-gradient text-white font-semibold py-2.5 shadow-sm">Attempt Test</a>
+                        {% else %}
+                        <button class="w-full rounded-xl bg-amber-50 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 font-semibold py-2.5 border border-amber-200" disabled>No Questions</button>
+                        {% endif %}
+                    </div>
+                </article>
+                {% empty %}
+                <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card col-span-full">
+                    <p class="text-sm text-slate-600 dark:text-slate-300">No tests available yet.</p>
+                </article>
+                {% endfor %}
+            </div>
+        </div>
+
+        <aside class="space-y-4">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Completed Tests</h3>
+            <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card">
+                <div class="space-y-3 max-h-96 overflow-y-auto pr-1">
+                    {% for attempt in completed_attempts %}
+                    <div class="rounded-xl border border-emerald-200 bg-emerald-50 dark:bg-emerald-500/20 p-3">
+                        <p class="font-semibold text-slate-900 dark:text-white">{{ attempt.test.title }}</p>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ attempt.attempted_at|date:"M d, Y" }}</p>
+                        <span class="inline-flex mt-2 text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 font-semibold">Score: {{ attempt.score }}</span>
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-slate-600 dark:text-slate-300">No completed tests yet.</p>
+                    {% endfor %}
+                </div>
+            </article>
+        </aside>
+    </section>
+</div>
+{% endblock %}

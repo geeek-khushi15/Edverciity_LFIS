@@ -1,0 +1,207 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learning Flow Insights</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Bootstrap Icons for Vectors -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .clip-polygon {
+            clip-path: polygon(0 0, 100% 0, 100% 90%, 0% 100%);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 font-sans text-gray-800 antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- 1 & 2. Hero Header -->
+    <header class="bg-gradient-to-br from-brand-600 to-brand-900 text-white relative shadow-xl clip-polygon pb-32 pt-24 px-4 sm:px-6 lg:px-8 text-center">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight mb-6">Learning Flow Insights</h1>
+            <p class="text-xl md:text-2xl font-light text-brand-100 mb-10 max-w-3xl mx-auto">
+                "Empowering Training with Structured Learning & Certification"
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="{% url 'login' %}" 
+                   class="bg-white text-brand-700 hover:bg-brand-50 font-bold text-lg py-3 px-8 rounded-full shadow-lg transition-transform transform hover:-translate-y-1">
+                   Login to Portal
+                </a>
+                <a href="#register" 
+                   class="bg-transparent border-2 border-brand-100 text-white hover:bg-brand-800 font-semibold text-lg py-3 px-8 rounded-full transition-colors">
+                   Join Now
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 3. Role-Based Access Options -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            
+            <!-- Student Card -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center group hover:-translate-y-2 hover:shadow-2xl transition-all duration-300">
+                <div class="w-16 h-16 mx-auto bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i class="bi bi-mortarboard-fill text-3xl"></i>
+                </div>
+                <h4 class="text-xl font-bold text-gray-900 mb-3">Student Portal</h4>
+                <p class="text-gray-500 mb-8 whitespace-pre-line">Access your enrolled courses, attempt scheduled tests, and apply for your final certification.</p>
+                <a href="{% url 'login' %}" class="block w-full text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white font-semibold py-3 rounded-xl transition-colors">Student Login</a>
+            </div>
+
+            <!-- Trainer Card -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center group hover:-translate-y-2 hover:shadow-2xl transition-all duration-300">
+                <div class="w-16 h-16 mx-auto bg-green-100 text-green-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i class="bi bi-person-workspace text-3xl"></i>
+                </div>
+                <h4 class="text-xl font-bold text-gray-900 mb-3">Trainer Portal</h4>
+                <p class="text-gray-500 mb-8">Manage assigned cohorts, upload course materials, build tests, and recommend top performers.</p>
+                <a href="{% url 'login' %}" class="block w-full text-green-600 bg-green-50 hover:bg-green-600 hover:text-white font-semibold py-3 rounded-xl transition-colors">Trainer Login</a>
+            </div>
+
+            <!-- Admin Card -->
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center group hover:-translate-y-2 hover:shadow-2xl transition-all duration-300">
+                <div class="w-16 h-16 mx-auto bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                    <i class="bi bi-shield-lock-fill text-3xl"></i>
+                </div>
+                <h4 class="text-xl font-bold text-gray-900 mb-3">Admin Portal</h4>
+                <p class="text-gray-500 mb-8">Orchestrate the entire platform. Create courses, assign batches, and resolve Certifications.</p>
+                <a href="{% url 'login' %}" class="block w-full text-rose-600 bg-rose-50 hover:bg-rose-600 hover:text-white font-semibold py-3 rounded-xl transition-colors">Admin Login</a>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 4. Feature Highlights Grid -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">System Capabilities</h2>
+            <p class="text-lg text-gray-500">A full-stack ecosystem designed for educational velocity.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-l-brand-500 hover:shadow-md transition-shadow flex items-center space-x-4">
+                <i class="bi bi-collection text-3xl text-brand-500"></i>
+                <h6 class="font-bold text-gray-800">Batch-Based Learning</h6>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-l-indigo-500 hover:shadow-md transition-shadow flex items-center space-x-4">
+                <i class="bi bi-person-video3 text-3xl text-indigo-500"></i>
+                <h6 class="font-bold text-gray-800">Trainer-Led Training</h6>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-l-sky-500 hover:shadow-md transition-shadow flex items-center space-x-4">
+                <i class="bi bi-file-earmark-pdf text-3xl text-sky-500"></i>
+                <h6 class="font-bold text-gray-800">Material Access</h6>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-l-amber-500 hover:shadow-md transition-shadow flex items-center space-x-4">
+                <i class="bi bi-ui-checks-grid text-3xl text-amber-500"></i>
+                <h6 class="font-bold text-gray-800">Test Evaluation</h6>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow flex items-center space-x-4">
+                <i class="bi bi-award text-3xl text-emerald-500"></i>
+                <h6 class="font-bold text-gray-800">Certification Workflow</h6>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-l-violet-500 hover:shadow-md transition-shadow flex items-center space-x-4">
+                <i class="bi bi-question-circle text-3xl text-violet-500"></i>
+                <h6 class="font-bold text-gray-800">Raise Doubts Support</h6>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-l-slate-700 hover:shadow-md transition-shadow flex items-center space-x-4 col-span-1 sm:col-span-2 lg:col-span-2">
+                <i class="bi bi-journal-check text-3xl text-slate-700"></i>
+                <h6 class="font-bold text-gray-800">Syllabus Acknowledgment</h6>
+            </div>
+        </div>
+    </section>
+
+    <!-- 6. Student Actions Overview -->
+    <section class="bg-white py-24 border-y border-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="w-full md:w-1/2">
+                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=800&auto=format&fit=crop"
+                         class="rounded-3xl shadow-2xl object-cover w-full h-[400px]" alt="Students Learning">
+                </div>
+                <div class="w-full md:w-1/2">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Empowering the Student Experience</h2>
+                    <p class="text-lg text-gray-500 mb-10">Once enrolled, our dedicated portal grants you absolute academic clarity and interaction.</p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div class="flex items-center space-x-4 bg-gray-50 p-4 rounded-xl">
+                            <i class="bi bi-check-circle-fill text-brand-500 text-2xl"></i>
+                            <h5 class="font-bold text-gray-800">Acknowledge Syllabus</h5>
+                        </div>
+                        <div class="flex items-center space-x-4 bg-gray-50 p-4 rounded-xl">
+                            <i class="bi bi-check-circle-fill text-brand-500 text-2xl"></i>
+                            <h5 class="font-bold text-gray-800">Raise Doubts Live</h5>
+                        </div>
+                        <div class="flex items-center space-x-4 bg-gray-50 p-4 rounded-xl">
+                            <i class="bi bi-check-circle-fill text-brand-500 text-2xl"></i>
+                            <h5 class="font-bold text-gray-800">Take MCQ Tests</h5>
+                        </div>
+                        <div class="flex items-center space-x-4 bg-gray-50 p-4 rounded-xl">
+                            <i class="bi bi-check-circle-fill text-brand-500 text-2xl"></i>
+                            <h5 class="font-bold text-gray-800">Apply for Certificate</h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 7. Call To Action -->
+    <section id="register" class="bg-gray-900 text-white py-24 border-t-4 border-brand-500 text-center">
+        <div class="max-w-4xl mx-auto px-4">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4">Ready to begin your journey?</h2>
+            <p class="text-xl text-gray-400 mb-10">Register your account below according to your designated role.</p>
+
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="{% url 'login' %}" 
+                   class="bg-brand-600 hover:bg-brand-500 text-white font-bold text-lg py-3 px-10 rounded-full transition-colors shadow-lg">
+                   Login
+                </a>
+                <a href="{% url 'student_register' %}" 
+                   class="bg-transparent border border-gray-600 hover:border-brand-400 hover:text-brand-400 text-white font-semibold text-lg py-3 px-8 rounded-full transition-colors">
+                   Register Student
+                </a>
+                <a href="{% url 'trainer_register' %}" 
+                   class="bg-transparent border border-gray-600 hover:border-brand-400 hover:text-brand-400 text-white font-semibold text-lg py-3 px-8 rounded-full transition-colors">
+                   Register Trainer
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-950 text-gray-500 py-8 text-center border-t border-gray-800">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>&copy; 2026 Learning Flow Insights. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,34 @@
+{% extends 'adminpanel/base.html' %}
+{% block title %}Attendance{% endblock %}
+{% block page_title %}Attendance Sessions{% endblock %}
+{% block nav_attendance %}active{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="font-bold text-slate-800">Recent Attendance Sessions <span class="text-slate-400 font-normal text-sm">(last 200)</span></h2>
+    </div>
+    <div class="overflow-x-auto">
+        <table>
+            <thead>
+                <tr><th>#</th><th>Batch</th><th>Course</th><th>Module</th><th>Trainer</th><th>Date</th><th>Records</th></tr>
+            </thead>
+            <tbody>
+                {% for s in sessions %}
+                <tr>
+                    <td class="text-slate-400">{{ forloop.counter }}</td>
+                    <td class="font-semibold text-slate-800">{{ s.batch.name }}</td>
+                    <td class="text-indigo-700">{{ s.batch.course.title }}</td>
+                    <td>{{ s.module.name|default:"—" }}</td>
+                    <td>{{ s.trainer.username|default:"—" }}</td>
+                    <td class="text-slate-400">{{ s.session_date|date:"d M Y" }}</td>
+                    <td><span class="badge badge-green">{{ s.record_count }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-slate-400 py-6">No attendance sessions recorded yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="space-y-6 lg:space-y-8">
+    <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Student Progress</h2>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">Track your completion status across enrolled courses and batches.</p>
+        </div>
+        <a href="{% url 'student_profile' %}" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+            <i class="bi bi-arrow-left"></i> Back to Profile
+        </a>
+    </section>
+
+    <section class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 sm:p-6 shadow-card">
+        <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+            <div>
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Completion Breakdown</h3>
+                <p class="text-sm text-slate-600 dark:text-slate-300 mt-1">Track your learning pace by batch with quick performance insights.</p>
+            </div>
+            <a href="{% url 'student_attendance' %}" class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+                <i class="bi bi-clock-history"></i> Attendance History
+            </a>
+        </div>
+
+        <div class="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <p class="text-xs font-semibold tracking-wide text-slate-500 uppercase">Enrolled Batches</p>
+                <p id="insightBatchCount" class="mt-1 text-2xl font-extrabold text-slate-900">0</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <p class="text-xs font-semibold tracking-wide text-slate-500 uppercase">Average Completion</p>
+                <p id="insightAverageProgress" class="mt-1 text-2xl font-extrabold text-primary-700">0%</p>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                <p class="text-xs font-semibold tracking-wide text-slate-500 uppercase">Highest Progress</p>
+                <p id="insightTopProgress" class="mt-1 text-2xl font-extrabold text-emerald-600">0%</p>
+            </div>
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 xl:grid-cols-3 gap-5">
+            <div class="xl:col-span-2 rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+                <div class="h-72 sm:h-80 max-w-2xl mx-auto">
+                    <canvas id="studentProgressDoughnut"></canvas>
+                </div>
+            </div>
+
+            <div class="rounded-xl border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+                <div class="flex items-center justify-between">
+                    <h4 class="text-sm font-bold text-slate-900">Batch-wise Progress</h4>
+                    <span id="insightProgressSummary" class="text-xs font-semibold text-slate-600">No data</span>
+                </div>
+
+                <div class="mt-4 space-y-4">
+                    {% for item in student_progress_chart %}
+                    <div>
+                        <div class="flex items-start justify-between mb-1.5 gap-2">
+                            <p class="text-sm font-semibold text-slate-800 dark:text-white leading-tight">{{ item.course }} <span class="text-slate-600 dark:text-slate-300 font-medium">({{ item.batch }})</span></p>
+                            <span class="text-xs font-bold text-primary-700 whitespace-nowrap">{{ item.progress }}%</span>
+                        </div>
+                        <div class="w-full h-2.5 rounded-full bg-slate-200 overflow-hidden">
+                            <div class="h-2.5 rounded-full bg-gradient-to-r from-primary-500 to-violet-500 transition-all duration-700" style="width: {{ item.progress }}%"></div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="rounded-xl border border-dashed border-slate-300 bg-white p-4 text-sm text-slate-600">
+                        No progress data yet. Start your first lesson to see completion insights here.
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+{{ chart_labels|json_script:"progress-chart-labels" }}
+{{ chart_values|json_script:"progress-chart-values" }}
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const labelsEl = document.getElementById('progress-chart-labels');
+const valuesEl = document.getElementById('progress-chart-values');
+const canvas = document.getElementById('studentProgressDoughnut');
+
+if (labelsEl && valuesEl && canvas) {
+    const labels = JSON.parse(labelsEl.textContent || '[]');
+    const values = JSON.parse(valuesEl.textContent || '[]');
+    const batchCountEl = document.getElementById('insightBatchCount');
+    const averageProgressEl = document.getElementById('insightAverageProgress');
+    const topProgressEl = document.getElementById('insightTopProgress');
+    const progressSummaryEl = document.getElementById('insightProgressSummary');
+
+    if (batchCountEl) {
+        batchCountEl.textContent = labels.length;
+    }
+
+    if (values.length > 0) {
+        const total = values.reduce((sum, value) => sum + Number(value || 0), 0);
+        const average = Math.round(total / values.length);
+        const top = Math.max(...values.map((value) => Number(value || 0)));
+
+        if (averageProgressEl) {
+            averageProgressEl.textContent = `${average}%`;
+        }
+        if (topProgressEl) {
+            topProgressEl.textContent = `${top}%`;
+        }
+        if (progressSummaryEl) {
+            progressSummaryEl.textContent = `${values.filter((value) => Number(value || 0) >= 75).length} on-track`;
+        }
+    } else {
+        if (averageProgressEl) {
+            averageProgressEl.textContent = '0%';
+        }
+        if (topProgressEl) {
+            topProgressEl.textContent = '0%';
+        }
+        if (progressSummaryEl) {
+            progressSummaryEl.textContent = 'No data';
+        }
+    }
+
+    if (labels.length > 0) {
+        const centerTextPlugin = {
+            id: 'centerText',
+            afterDraw(chart) {
+                const chartMeta = chart.getDatasetMeta(0);
+                if (!chartMeta || !chartMeta.data || !chartMeta.data.length) {
+                    return;
+                }
+
+                const point = chartMeta.data[0];
+                const data = chart.config.data.datasets[0].data || [];
+                if (!data.length) {
+                    return;
+                }
+
+                const avg = Math.round(data.reduce((sum, value) => sum + Number(value || 0), 0) / data.length);
+                const { ctx } = chart;
+                ctx.save();
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#0f172a';
+                ctx.font = '700 24px ui-sans-serif, system-ui, -apple-system';
+                ctx.fillText(`${avg}%`, point.x, point.y - 4);
+                ctx.fillStyle = '#64748b';
+                ctx.font = '600 11px ui-sans-serif, system-ui, -apple-system';
+                ctx.fillText('avg progress', point.x, point.y + 16);
+                ctx.restore();
+            }
+        };
+
+        new Chart(canvas, {
+            type: 'doughnut',
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: ['#4f46e5', '#7c3aed', '#0ea5e9', '#14b8a6', '#f59e0b', '#ef4444'],
+                    borderColor: '#ffffff',
+                    borderWidth: 4,
+                    hoverOffset: 8
+                }]
+            },
+            plugins: [centerTextPlugin],
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#475569',
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            padding: 18,
+                            font: {
+                                size: 12,
+                                weight: 600
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+</script>
+{% endblock %}

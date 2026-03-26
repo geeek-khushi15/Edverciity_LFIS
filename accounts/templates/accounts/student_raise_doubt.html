@@ -1,0 +1,102 @@
+{% extends 'accounts/base.html' %}
+
+{% block content %}
+<div class="space-y-6 lg:space-y-8">
+    <section class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Raise Doubts</h2>
+            <p class="text-slate-600 dark:text-slate-300 mt-1">Submit support tickets and track trainer responses.</p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+            <i class="bi bi-arrow-left"></i> Back to Dashboard
+        </a>
+    </section>
+
+    <section class="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
+        <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift xl:col-span-2">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Submit a Doubt</h3>
+            <form method="post" class="mt-5 space-y-4">
+                {% csrf_token %}
+
+                <div>
+                    <label for="id_title" class="block text-sm font-semibold text-slate-700 mb-2">Title</label>
+                    {{ doubt_form.title }}
+                </div>
+
+                <div>
+                    <label for="id_description" class="block text-sm font-semibold text-slate-700 mb-2">Description</label>
+                    {{ doubt_form.description }}
+                </div>
+
+                <div>
+                    <label for="id_query_type" class="block text-sm font-semibold text-slate-700 mb-2">Query Type</label>
+                    {{ doubt_form.query_type }}
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="id_related_course" class="block text-sm font-semibold text-slate-700 mb-2">Related Course</label>
+                        {{ doubt_form.related_course }}
+                    </div>
+                    <div>
+                        <label for="id_related_session" class="block text-sm font-semibold text-slate-700 mb-2">Related Session</label>
+                        {{ doubt_form.related_session }}
+                    </div>
+                </div>
+
+                <div class="flex justify-end">
+                    <button type="submit" class="rounded-xl btn-gradient text-white px-5 py-2.5 text-sm font-semibold transition-all shadow-sm">Submit Ticket</button>
+                </div>
+            </form>
+        </article>
+
+        <div class="space-y-4">
+            <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Submitted Doubts</h3>
+                <div class="mt-4 space-y-3 max-h-80 overflow-y-auto pr-1">
+                    {% for doubt in submitted_doubts %}
+                    <div class="rounded-xl border border-amber-200 bg-amber-50 dark:bg-amber-500/20 p-3">
+                        <div class="flex justify-between items-center gap-2">
+                            <p class="font-semibold text-slate-900 dark:text-white">{{ doubt.title }}</p>
+                            <span class="text-[11px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-300 font-semibold">Pending</span>
+                        </div>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ doubt.created_at|date:"M d, Y" }}</p>
+                        {% if doubt.related_course %}
+                        <p class="text-xs text-slate-600 mt-1">Course: {{ doubt.related_course.title }}</p>
+                        {% endif %}
+                        {% if doubt.response %}
+                        <p class="text-xs text-primary-700 mt-2">Trainer response: {{ doubt.response|truncatechars:110 }}</p>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-slate-600 dark:text-slate-300">No submitted doubts yet.</p>
+                    {% endfor %}
+                </div>
+            </article>
+
+            <article class="rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 p-5 shadow-card hover-lift">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">Resolved Doubts</h3>
+                <div class="mt-4 space-y-3 max-h-80 overflow-y-auto pr-1">
+                    {% for doubt in resolved_doubts %}
+                    <div class="rounded-xl border border-emerald-200 bg-emerald-50 dark:bg-emerald-500/20 p-3">
+                        <div class="flex justify-between items-center gap-2">
+                            <p class="font-semibold text-slate-900 dark:text-white">{{ doubt.title }}</p>
+                            <span class="text-[11px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-300 font-semibold">Resolved</span>
+                        </div>
+                        <p class="text-xs text-slate-600 dark:text-slate-300 mt-1">{{ doubt.resolved_at|date:"M d, Y" }}</p>
+                        {% if doubt.related_course %}
+                        <p class="text-xs text-slate-600 mt-1">Course: {{ doubt.related_course.title }}</p>
+                        {% endif %}
+                        {% if doubt.response %}
+                        <p class="text-xs text-slate-700 mt-2">Trainer response: {{ doubt.response }}</p>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="text-sm text-slate-600 dark:text-slate-300">No resolved doubts yet.</p>
+                    {% endfor %}
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+{% endblock %}
